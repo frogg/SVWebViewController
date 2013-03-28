@@ -540,7 +540,7 @@ NSString * const PROGRESS_ESTIMATE_KEY=@"WebProgressEstimatedProgressKey";
 - (void)actionButtonClicked:(id)sender {
     
     if(pageActionSheet)
-        return;
+        pageActionSheet=nil;
 	
     if(UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
         [self.pageActionSheet showFromBarButtonItem:self.actionBarButtonItem animated:YES];
