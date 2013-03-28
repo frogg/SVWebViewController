@@ -131,6 +131,7 @@ static const CGFloat kAddressHeight = 26.0f;
         address.keyboardType = UIKeyboardTypeURL;
     }
     address.autocapitalizationType = UITextAutocapitalizationTypeNone;
+    address.autocorrectionType = UITextAutocorrectionTypeNo;
     address.clearButtonMode = UITextFieldViewModeWhileEditing;
     
     [address addTarget:self
