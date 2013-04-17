@@ -31,7 +31,7 @@
     self.mediaPlaybackAllowsAirPlay = YES;
     self.mediaPlaybackRequiresUserAction = YES;
     self.useAddressBarAsSearchBarWhenAddressNotFound = YES;
-    self.isUseHTTPSWhenPossible = YES;
+    self.isUseHTTPSWhenPossible = NO;
     self.uiWebViewClassType = UIWebView.class;
 }
 
