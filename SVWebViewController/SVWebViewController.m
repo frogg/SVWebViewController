@@ -672,6 +672,11 @@ NSString * const PROGRESS_ESTIMATE_KEY=@"WebProgressEstimatedProgressKey";
 
 #pragma mark - Misc functions
 
+- (void)reload
+{
+    [self.mainWebView reload];
+}
+
 - (BOOL)isAddressAJavascriptEvaluation:(NSURL *)sourceURL
 {
     BOOL isJSEvaluation=NO;

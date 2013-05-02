@@ -26,6 +26,11 @@
 
 - (void)dismissPageActionSheet;
 
+#pragma mark - Misc functions
+
+#pragma mark Reload
+- (void)reload;
+
 - (BOOL)isAddressAJavascriptEvaluation:(NSURL *)sourceURL;
 - (NSString *)getSearchQuery:(NSString *)urlString;
 - (NSMutableURLRequest *)requestForAttemptingHTTPS:(NSMutableURLRequest *)newRequest;
