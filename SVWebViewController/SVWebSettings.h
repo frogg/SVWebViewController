@@ -16,6 +16,7 @@
 @property BOOL isSwipeBackAndForward;
 @property BOOL useAddressBarAsSearchBarWhenAddressNotFound;
 @property BOOL isUseHTTPSWhenPossible;
+@property BOOL isShowAddressBar;
 
 @property (nonatomic) id uiWebViewClassType;
 @property (strong) id<UIWebViewDelegate, SVWebViewControllerDelegate> delegate;

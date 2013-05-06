@@ -26,6 +26,7 @@
 
 - (void)loadDefaults
 {
+    self.isShowAddressBar = YES;
     self.isSwipeBackAndForward = NO;
     self.mediaAllowsInlineMediaPlayback = YES;
     self.mediaPlaybackAllowsAirPlay = YES;

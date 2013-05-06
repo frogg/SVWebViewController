@@ -84,18 +84,19 @@ static const CGFloat kAddressHeight = 26.0f;
 {
     [super viewDidLoad];
     
-    CGRect navBarFrame = self.view.bounds;
-    navBarFrame.size.height = kNavBarHeight;
-    
-    self.navigationBar.frame = navBarFrame;
-    self.navigationBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    
-    self.pageTitle =  [self createTitleWithNavBar:self.navigationBar];
-    [self.navigationBar addSubview:self.pageTitle];
-    
-    self.addressField = [self createAddressFieldWithNavBar:self.navigationBar];
-    [self.navigationBar addSubview:self.addressField];
-    
+    if (self.settings.isShowAddressBar) {
+        CGRect navBarFrame = self.view.bounds;
+        navBarFrame.size.height = kNavBarHeight;
+        
+        self.navigationBar.frame = navBarFrame;
+        self.navigationBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        
+        self.pageTitle =  [self createTitleWithNavBar:self.navigationBar];
+        [self.navigationBar addSubview:self.pageTitle];
+        
+        self.addressField = [self createAddressFieldWithNavBar:self.navigationBar];
+        [self.navigationBar addSubview:self.addressField];
+    }
         //    self.view.restorationIdentifier = @"derp2";
 }
 
@@ -216,7 +217,6 @@ static const CGFloat kAddressHeight = 26.0f;
 
 - (void)viewWillLayoutSubviews
 {
-    [self landscapeOrientationBugFixForExitingFullscreenVideoAndMailingLink:self.view];
     [self bugFixForBarButtonsBeingRemovedByActionSheet];
 }
 
@@ -224,33 +224,6 @@ static const CGFloat kAddressHeight = 26.0f;
 {
     self.webViewController.toolbarItems=0;
     [self.webViewController updateToolbarItems:self.webViewController.isLoadingPage];
-}
-
-- (void)landscapeOrientationBugFixForExitingFullscreenVideoAndMailingLink:(UIView *)view
-{
-    UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
-    
-    const CGFloat STATUS_BAR_HEIGHT = 20;
-    CGRect screenBounds = self.view.bounds;
-    if (UIDeviceOrientationIsLandscape(orientation)
-    && (screenBounds.size.height==screenBounds.size.width
-        || (screenBounds.size.height+STATUS_BAR_HEIGHT)==screenBounds.size.width)) {
-        CGPoint center;
-        if (UIInterfaceOrientationLandscapeRight==orientation) {
-            center.x = (screenBounds.size.width-STATUS_BAR_HEIGHT)/2;
-            
-        } else {
-            center.x = (screenBounds.size.width+STATUS_BAR_HEIGHT)/2;
-        }
-        center.y = self.view.center.y;
-        
-        screenBounds.size.width = [UIScreen mainScreen].bounds.size.height;
-        screenBounds.size.height = [UIScreen mainScreen].bounds.size.width-STATUS_BAR_HEIGHT;
-        
-        self.view.bounds = screenBounds;
-        self.view.center = center;
-        [self.view setAutoresizingMask:UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight];
-    }
 }
 
 
@@ -261,6 +234,7 @@ static const CGFloat kAddressHeight = 26.0f;
     SVModalWebViewController *thisViewController=nil;
     
     SVWebSettings *settings = [coder decodeObjectForKey:NSStringFromClass(SVWebSettings.class)];
+    
     thisViewController = [[SVModalWebViewController alloc] initWithURL:nil withSettings:settings];
     thisViewController.restorationIdentifier = identifierComponents.lastObject;
     thisViewController.restorationClass = self.class;
