@@ -198,10 +198,8 @@ static const CGFloat kAddressHeight = 26.0f;
 - (void)updateAddress:(NSURL *)sourceURL
 {
     if (NO==[self.webViewController isAddressAJavascriptEvaluation:sourceURL]) {
-        if (NO==[self.addressField.text isEqualToString:sourceURL.absoluteString]) {
-            if (NO==self.addressField.editing) {
-                self.addressField.text = sourceURL.absoluteString;
-            }
+        if (NO==self.addressField.editing) {
+            self.addressField.text = sourceURL.absoluteString;
         }
     }
 }
