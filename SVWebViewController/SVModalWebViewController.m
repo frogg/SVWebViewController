@@ -24,16 +24,24 @@
 @property (nonatomic, strong) UITextField* addressField;
 @property (nonatomic, strong) SVWebSettings *settings;
 
+@property (nonatomic, strong) UIView *statusBarOverlay;
+@property (nonatomic, strong) UIColor *spacerColor;
 @property (nonatomic, strong) UIToolbar *addressToolbar;
+
+@property (nonatomic, strong) UIView *container;
 
 @end
 
-static const CGFloat kNavBarHeight = 52.0f;
 static const CGFloat kLabelHeight = 14.0f;
 static const CGFloat kMargin = 10.0f;
-static const CGFloat kSpacer = 1.0f;//2.0f;
+static const CGFloat kSpacer = 1.0f;
 static const CGFloat kLabelFontSize = 12.0f;
 static const CGFloat kAddressHeight = 26.0f;
+static const CGFloat kNavBarHeight = kSpacer*4 + kLabelHeight + kAddressHeight;
+
+
+static const CGFloat kAlphaStandard = 0.75;
+static const NSInteger kStatusBarHeight = 20;
 
 
 @implementation SVModalWebViewController
@@ -41,21 +49,19 @@ static const CGFloat kAddressHeight = 26.0f;
 #pragma mark - Initialization
 
 - (id)initWithAddress:(NSString*)urlString {
-    return [self initWithURL:[NSURL URLWithString:urlString]];
+    self = [self initWithURL:[NSURL URLWithString:urlString]];
+    return self;
 }
 
 - (id)initWithURL:(NSURL *)URL {
-    self.settings = [SVWebSettings new];
-    SVWebViewController *webViewController = [[SVWebViewController alloc] initWithURL:URL withSettings:self.settings];
-    self = [self initWebViewController:webViewController];
-    
-    
+    self = [self initWithURL:URL withSettings:[SVWebSettings new]];
     return self;
 }
 
 - (id)initWithURL:(NSURL *)URL withSettings:(SVWebSettings *)settings {
     SVWebViewController *webViewController = [[SVWebViewController alloc] initWithURL:URL withSettings:settings];
     self.settings = settings;
+    self.toolbarSpacingAlpha = kAlphaStandard;
     if (self.settings.isScrollingAddressBar) {
         [self setNavigationBarHidden:YES];
     }
@@ -99,14 +105,34 @@ static const CGFloat kAddressHeight = 26.0f;
     for (UIView *webSubView in view.subviews) {
         if ([WEB_BROWSER_CLASS_NAME isEqualToString:NSStringFromClass(webSubView.class)]) {
             
+            CGRect containerFrame = self.container.frame;
+            containerFrame.size.width = view.frame.size.width;
+            self.container.frame = containerFrame;
+            
+            CGRect webViewColorFrame;
+            webViewColorFrame.size.width = view.frame.size.width;
+            webViewColorFrame.size.height = kStatusBarHeight;
+            UIView *webViewColor = [[UIView alloc] initWithFrame:webViewColorFrame];
+            webViewColor.backgroundColor = self.webViewController.mainWebView.backgroundColor;
+            [self.container addSubview:webViewColor];
+            
+            CGRect spacingForStatusBar;
+            spacingForStatusBar.size.height = kStatusBarHeight;
+            spacingForStatusBar.size.width = view.frame.size.width;
+            self.statusBarOverlay = [[UIToolbar alloc] initWithFrame:spacingForStatusBar];
+            self.statusBarOverlay.alpha = self.toolbarSpacingAlpha;
+            self.statusBarOverlay.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+            [self.webViewController.mainWebView addSubview:self.statusBarOverlay];
+            
             CGRect addressBarFrame = addressBar.frame;
+            addressBarFrame.origin.y = kStatusBarHeight;
             addressBarFrame.size.width = view.frame.size.width;
             addressBar.frame = addressBarFrame;
             
-            [self.webViewController.mainWebView.scrollView addSubview:addressBar];
+            [self.webViewController.mainWebView.scrollView addSubview:self.addressToolbar];
             
             CGRect webBrowserFrame = webSubView.frame;
-            webBrowserFrame.origin.y = addressBar.frame.size.height; // Shift down
+            webBrowserFrame.origin.y = self.addressToolbar.frame.size.height+kStatusBarHeight; // Shift down
             webSubView.frame = webBrowserFrame;
         }
     }
@@ -117,28 +143,33 @@ static const CGFloat kAddressHeight = 26.0f;
     [super viewDidLoad];
     
     if (self.settings.isShowAddressBar) {
+        CGRect containerFrame = self.view.bounds;
+        containerFrame.size.height = kNavBarHeight+kStatusBarHeight;
+        self.container = [[UIView alloc] initWithFrame:containerFrame];
         
-        self.addressToolbar = [UIToolbar new];
         CGRect addressBarFrame = self.view.bounds;
         addressBarFrame.size.height = kNavBarHeight;
-        
-        self.addressToolbar.frame = addressBarFrame;
+        addressBarFrame.origin.y = kStatusBarHeight;
+        self.addressToolbar = [[UIToolbar alloc] initWithFrame:addressBarFrame];
+        self.addressToolbar.alpha = kAlphaStandard;
         self.addressToolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-                
-        [self.navigationBar addSubview:self.addressToolbar];
         
-        self.pageTitle =  [self createTitleWithNavBar:self.navigationBar];
+        self.pageTitle =  [self createTitleWithNavBar:self.addressToolbar];
         [self.addressToolbar addSubview:self.pageTitle];
         
         self.addressField = [self createAddressFieldWithToolBar:self.addressToolbar];
         [self.addressToolbar addSubview:self.addressField];
+        
+        [self.container addSubview:self.addressToolbar];
+        
+        [self.navigationBar addSubview:self.addressToolbar];
     }
 }
 
-- (UILabel *)createTitleWithNavBar:(UINavigationBar *)navBar
+- (UILabel *)createTitleWithNavBar:(UIToolbar *)toolBar
 {
     CGRect labelFrame = CGRectMake(kMargin, kSpacer,
-                                   navBar.bounds.size.width - 2*kMargin, kLabelHeight);
+                                   toolBar.bounds.size.width - 2*kMargin, kLabelHeight);
     UILabel *label = [[UILabel alloc] initWithFrame:labelFrame];
     
     label.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -242,6 +273,8 @@ static const CGFloat kAddressHeight = 26.0f;
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:NO];
     self.navigationBar.tintColor = self.barsTintColor;
+    self.addressToolbar.tintColor = self.barsTintColor;
+    self.toolbar.tintColor = self.barsTintColor;
 }
 
 - (void)setAvailableActions:(SVWebViewControllerAvailableActions)newAvailableActions {
