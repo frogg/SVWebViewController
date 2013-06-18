@@ -8,6 +8,7 @@
 
 #import "SVWebViewController.h"
 #import "SVWebSettings.h"
+#import "SVModalWebViewController.h"
 
 @interface SVWebViewController () <UIWebViewDelegate, UIActionSheetDelegate, MFMailComposeViewControllerDelegate, UISplitViewControllerDelegate>
 
@@ -238,8 +239,6 @@
         }
         [self setupMediaSettings];
     }
-    
-//    self.view.restorationIdentifier = @"derp3";
 }
 
 - (void)viewDidUnload {
@@ -261,6 +260,12 @@
     self.indicator.center = self.mainWebView.center;
     
     [self.navigationController setToolbarHidden:NO animated:animated];
+    
+    if (self.settings.isScrollingAddressBar) {
+        NSAssert([self.navigationController isKindOfClass:SVModalWebViewController.class], @"SVWebViewController needs to be contained within a SVModalWebViewController to be able to use a scrolling address bar.");
+        SVModalWebViewController *modalView = (SVModalWebViewController *)self.navigationController;
+        [modalView addScrollingAddressBar];
+    }
 }
 
 - (void)viewWillDisappear:(BOOL)animated {

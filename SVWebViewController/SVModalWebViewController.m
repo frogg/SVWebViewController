@@ -20,9 +20,11 @@
 
 @property (nonatomic, strong) SVWebViewController *webViewController;
 
-@property (nonatomic, retain) UILabel* pageTitle;
-@property (nonatomic, retain) UITextField* addressField;
+@property (nonatomic, strong) UILabel* pageTitle;
+@property (nonatomic, strong) UITextField* addressField;
 @property (nonatomic, strong) SVWebSettings *settings;
+
+@property (nonatomic, strong) UIToolbar *addressToolbar;
 
 @end
 
@@ -54,6 +56,9 @@ static const CGFloat kAddressHeight = 26.0f;
 - (id)initWithURL:(NSURL *)URL withSettings:(SVWebSettings *)settings {
     SVWebViewController *webViewController = [[SVWebViewController alloc] initWithURL:URL withSettings:settings];
     self.settings = settings;
+    if (self.settings.isScrollingAddressBar) {
+        [self setNavigationBarHidden:YES];
+    }
     self = [self initWebViewController:webViewController];
     
     return self;
@@ -80,24 +85,63 @@ static const CGFloat kAddressHeight = 26.0f;
     return self;
 }
 
+- (void)addScrollingAddressBar
+{
+    if (self.settings.isScrollingAddressBar) {
+        [self addScrollingAddressBar:self.addressToolbar withScrollView:self.webViewController.mainWebView.scrollView];
+    }
+    [self.navigationController setNavigationBarHidden:YES];
+}
+
+- (void)addScrollingAddressBar:(UIView *)addressBar withScrollView:(UIScrollView *)view
+{
+    static NSString * const WEB_BROWSER_CLASS_NAME = @"UIWebBrowserView";
+    for (UIView *webSubView in view.subviews) {
+        if ([WEB_BROWSER_CLASS_NAME isEqualToString:NSStringFromClass(webSubView.class)]) {
+            
+            CGRect addressBarFrame = addressBar.frame;
+            addressBarFrame.size.width = view.frame.size.width;
+            addressBar.frame = addressBarFrame;
+            addressBar.hidden = NO;
+            
+            [self.webViewController.mainWebView.scrollView addSubview:addressBar];
+            
+            CGRect webBrowserFrame = webSubView.frame;
+            webBrowserFrame.origin.y = addressBar.frame.size.height; // Shift down
+            webSubView.frame = webBrowserFrame;
+        }
+    }
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     
     if (self.settings.isShowAddressBar) {
-        CGRect navBarFrame = self.view.bounds;
-        navBarFrame.size.height = kNavBarHeight;
         
-        self.navigationBar.frame = navBarFrame;
-        self.navigationBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        self.addressToolbar = [UIToolbar new];
+        CGRect addressBarFrame = self.view.bounds;
+        addressBarFrame.size.height = kNavBarHeight;
+        
+        self.addressToolbar.frame = addressBarFrame;
+        self.addressToolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        
+        if (self.settings.isScrollingAddressBar) {
+            
+            [self setToolbarHidden:YES animated:NO];
+            
+        } else {
+            
+            [self.navigationBar addSubview:self.addressToolbar];
+        }
+        
         
         self.pageTitle =  [self createTitleWithNavBar:self.navigationBar];
-        [self.navigationBar addSubview:self.pageTitle];
+        [self.addressToolbar addSubview:self.pageTitle];
         
-        self.addressField = [self createAddressFieldWithNavBar:self.navigationBar];
-        [self.navigationBar addSubview:self.addressField];
+        self.addressField = [self createAddressFieldWithToolBar:self.addressToolbar];
+        [self.addressToolbar addSubview:self.addressField];
     }
-        //    self.view.restorationIdentifier = @"derp2";
 }
 
 - (UILabel *)createTitleWithNavBar:(UINavigationBar *)navBar
@@ -115,11 +159,11 @@ static const CGFloat kAddressHeight = 26.0f;
     return label;
 }
 
-- (UITextField *)createAddressFieldWithNavBar:(UINavigationBar *)navBar
+- (UITextField *)createAddressFieldWithToolBar:(UIToolbar *)toolBar
 {
     const NSUInteger WIDTH_OF_NETWORK_ACTIVITY_ANIMATION=4;
     CGRect addressFrame = CGRectMake(kMargin, kSpacer*1.5 + kLabelHeight,
-                                     navBar.bounds.size.width - WIDTH_OF_NETWORK_ACTIVITY_ANIMATION*kMargin, kAddressHeight);
+                                     toolBar.bounds.size.width - WIDTH_OF_NETWORK_ACTIVITY_ANIMATION*kMargin, kAddressHeight);
     UITextField *address = [[UITextField alloc] initWithFrame:addressFrame];
     
     address.autoresizingMask = UIViewAutoresizingFlexibleWidth;
