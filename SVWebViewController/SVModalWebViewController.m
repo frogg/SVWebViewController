@@ -102,7 +102,6 @@ static const CGFloat kAddressHeight = 26.0f;
             CGRect addressBarFrame = addressBar.frame;
             addressBarFrame.size.width = view.frame.size.width;
             addressBar.frame = addressBarFrame;
-            addressBar.hidden = NO;
             
             [self.webViewController.mainWebView.scrollView addSubview:addressBar];
             
@@ -125,16 +124,8 @@ static const CGFloat kAddressHeight = 26.0f;
         
         self.addressToolbar.frame = addressBarFrame;
         self.addressToolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        
-        if (self.settings.isScrollingAddressBar) {
-            
-            [self setToolbarHidden:YES animated:NO];
-            
-        } else {
-            
-            [self.navigationBar addSubview:self.addressToolbar];
-        }
-        
+                
+        [self.navigationBar addSubview:self.addressToolbar];
         
         self.pageTitle =  [self createTitleWithNavBar:self.navigationBar];
         [self.addressToolbar addSubview:self.pageTitle];
