@@ -17,6 +17,7 @@
 @property BOOL useAddressBarAsSearchBarWhenAddressNotFound;
 @property BOOL isUseHTTPSWhenPossible;
 @property BOOL isShowAddressBar;
+@property BOOL isScrollingAddressBar;
 
 @property (nonatomic) id uiWebViewClassType;
 @property (strong) id<UIWebViewDelegate, SVWebViewControllerDelegate> delegate;

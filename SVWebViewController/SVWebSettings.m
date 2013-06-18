@@ -34,6 +34,7 @@
     self.useAddressBarAsSearchBarWhenAddressNotFound = YES;
     self.isUseHTTPSWhenPossible = NO;
     self.uiWebViewClassType = UIWebView.class;
+    self.isScrollingAddressBar = YES;
 }
 
 #pragma mark - NSCoding
