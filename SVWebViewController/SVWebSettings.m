@@ -38,7 +38,7 @@ static const NSInteger kStatusBarHeight = 20;
     self.isUseHTTPSWhenPossible = NO;
     self.uiWebViewClassType = UIWebView.class;
     self.isScrollingAddressBar = YES;
-    self.scrollingAddressBarYOffset = kStatusBarHeight*2;
+    self.scrollingAddressBarYOffset = kStatusBarHeight;
     self.toolbarSpacingAlpha = kAlphaStandard;
 }
 
