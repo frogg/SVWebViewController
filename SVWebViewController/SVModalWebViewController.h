@@ -50,7 +50,4 @@ typedef NSUInteger SVWebViewControllerAvailableActions;
 @property (nonatomic, readonly, strong) SVWebSettings *settings;
 @property (nonatomic, readonly, strong) SVWebViewController *webViewController;
 
-#pragma mark Controls the alpha of the toolbar used for spacing underneath the status bar whilst using an scrolling address bar.
-@property CGFloat toolbarSpacingAlpha;
-
 @end

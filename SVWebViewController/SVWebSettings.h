@@ -17,7 +17,11 @@
 @property BOOL useAddressBarAsSearchBarWhenAddressNotFound;
 @property BOOL isUseHTTPSWhenPossible;
 @property BOOL isShowAddressBar;
+
+#pragma mark Scrolling address bar settings.
 @property BOOL isScrollingAddressBar;
+@property CGFloat toolbarSpacingAlpha;
+@property CGFloat scrollingAddressBarYOffset;
 
 @property (nonatomic) id uiWebViewClassType;
 @property (strong) id<UIWebViewDelegate, SVWebViewControllerDelegate> delegate;

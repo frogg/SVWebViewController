@@ -40,10 +40,6 @@ static const CGFloat kAddressHeight = 26.0f;
 static const CGFloat kNavBarHeight = kSpacer*4 + kLabelHeight + kAddressHeight;
 
 
-static const CGFloat kAlphaStandard = 0.75;
-static const NSInteger kStatusBarHeight = 20;
-
-
 @implementation SVModalWebViewController
 
 #pragma mark - Initialization
@@ -61,7 +57,6 @@ static const NSInteger kStatusBarHeight = 20;
 - (id)initWithURL:(NSURL *)URL withSettings:(SVWebSettings *)settings {
     SVWebViewController *webViewController = [[SVWebViewController alloc] initWithURL:URL withSettings:settings];
     self.settings = settings;
-    self.toolbarSpacingAlpha = kAlphaStandard;
     if (self.settings.isScrollingAddressBar) {
         [self setNavigationBarHidden:YES];
     }
@@ -109,30 +104,32 @@ static const NSInteger kStatusBarHeight = 20;
             containerFrame.size.width = view.frame.size.width;
             self.container.frame = containerFrame;
             
-            CGRect webViewColorFrame;
-            webViewColorFrame.size.width = view.frame.size.width;
-            webViewColorFrame.size.height = kStatusBarHeight;
-            UIView *webViewColor = [[UIView alloc] initWithFrame:webViewColorFrame];
-            webViewColor.backgroundColor = self.webViewController.mainWebView.backgroundColor;
-            [self.container addSubview:webViewColor];
-            
-            CGRect spacingForStatusBar;
-            spacingForStatusBar.size.height = kStatusBarHeight;
-            spacingForStatusBar.size.width = view.frame.size.width;
-            self.statusBarOverlay = [[UIToolbar alloc] initWithFrame:spacingForStatusBar];
-            self.statusBarOverlay.alpha = self.toolbarSpacingAlpha;
-            self.statusBarOverlay.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-            [self.webViewController.mainWebView addSubview:self.statusBarOverlay];
+            if (0!=self.settings.toolbarSpacingAlpha) {
+                CGRect webViewColorFrame;
+                webViewColorFrame.size.width = view.frame.size.width;
+                webViewColorFrame.size.height = self.settings.scrollingAddressBarYOffset;
+                UIView *webViewColor = [[UIView alloc] initWithFrame:webViewColorFrame];
+                webViewColor.backgroundColor = self.webViewController.mainWebView.backgroundColor;
+                [self.container addSubview:webViewColor];
+                
+                CGRect spacingForStatusBar;
+                spacingForStatusBar.size.height = self.settings.scrollingAddressBarYOffset;
+                spacingForStatusBar.size.width = view.frame.size.width;
+                self.statusBarOverlay = [[UIToolbar alloc] initWithFrame:spacingForStatusBar];
+                self.statusBarOverlay.alpha = self.settings.toolbarSpacingAlpha;
+                self.statusBarOverlay.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+                [self.webViewController.mainWebView addSubview:self.statusBarOverlay];
+            }
             
             CGRect addressBarFrame = addressBar.frame;
-            addressBarFrame.origin.y = kStatusBarHeight;
+            addressBarFrame.origin.y = self.settings.scrollingAddressBarYOffset;
             addressBarFrame.size.width = view.frame.size.width;
             addressBar.frame = addressBarFrame;
             
             [self.webViewController.mainWebView.scrollView addSubview:self.addressToolbar];
             
             CGRect webBrowserFrame = webSubView.frame;
-            webBrowserFrame.origin.y = self.addressToolbar.frame.size.height+kStatusBarHeight; // Shift down
+            webBrowserFrame.origin.y = self.addressToolbar.frame.size.height+self.settings.scrollingAddressBarYOffset; // Shift down
             webSubView.frame = webBrowserFrame;
         }
     }
@@ -144,14 +141,14 @@ static const NSInteger kStatusBarHeight = 20;
     
     if (self.settings.isShowAddressBar) {
         CGRect containerFrame = self.view.bounds;
-        containerFrame.size.height = kNavBarHeight+kStatusBarHeight;
+        containerFrame.size.height = kNavBarHeight+self.settings.scrollingAddressBarYOffset;
         self.container = [[UIView alloc] initWithFrame:containerFrame];
         
         CGRect addressBarFrame = self.view.bounds;
         addressBarFrame.size.height = kNavBarHeight;
-        addressBarFrame.origin.y = kStatusBarHeight;
+        addressBarFrame.origin.y = self.settings.scrollingAddressBarYOffset;
         self.addressToolbar = [[UIToolbar alloc] initWithFrame:addressBarFrame];
-        self.addressToolbar.alpha = kAlphaStandard;
+        self.addressToolbar.alpha = self.settings.toolbarSpacingAlpha;
         self.addressToolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         
         self.pageTitle =  [self createTitleWithNavBar:self.addressToolbar];

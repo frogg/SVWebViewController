@@ -11,6 +11,9 @@
 #import <objc/runtime.h>
 #import <objc/message.h>
 
+static const CGFloat kAlphaStandard = 0.75;
+static const NSInteger kStatusBarHeight = 20;
+
 @implementation SVWebSettings
 
 - (id)init
@@ -35,6 +38,8 @@
     self.isUseHTTPSWhenPossible = NO;
     self.uiWebViewClassType = UIWebView.class;
     self.isScrollingAddressBar = YES;
+    self.scrollingAddressBarYOffset = kStatusBarHeight*2;
+    self.toolbarSpacingAlpha = kAlphaStandard;
 }
 
 #pragma mark - NSCoding
