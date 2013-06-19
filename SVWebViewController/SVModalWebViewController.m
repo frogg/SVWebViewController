@@ -90,8 +90,8 @@ static const CGFloat kNavBarHeight = kSpacer*4 + kLabelHeight + kAddressHeight;
 {
     if (self.settings.isScrollingAddressBar) {
         [self addScrollingAddressBar:self.addressToolbar withScrollView:self.webViewController.mainWebView.scrollView];
+        [self.navigationController setNavigationBarHidden:YES];
     }
-    [self.navigationController setNavigationBarHidden:YES];
 }
 
 - (void)addScrollingAddressBar:(UIView *)addressBar withScrollView:(UIScrollView *)view
