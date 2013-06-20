@@ -47,13 +47,9 @@ static NSString * const kAddressToolbar = @"kAddressToolbar";
         self.settings = settings;
         
         CGRect addressBarBounds = self.view.bounds;
-        if (self.settings.isScrolling) {
-            addressBarBounds.size.height = kNavBarHeight+self.settings.scrollingYOffset;
-            
-        } else {
-            addressBarBounds.size.height = kNavBarHeight;
-        }
+        addressBarBounds.size.height = kNavBarHeight;
         self.view.frame = addressBarBounds;
+        self.view.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         self.view.restorationIdentifier = kSVAddressBar;
     }
     return self;
