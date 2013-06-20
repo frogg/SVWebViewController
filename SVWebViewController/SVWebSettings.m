@@ -7,12 +7,10 @@
 //
 
 #import "SVWebSettings.h"
+#import "SVAddressBarSettings.h"
 
 #import <objc/runtime.h>
 #import <objc/message.h>
-
-static const CGFloat kAlphaStandard = 0.75;
-static const NSInteger kStatusBarHeight = 20;
 
 @implementation SVWebSettings
 
@@ -29,17 +27,13 @@ static const NSInteger kStatusBarHeight = 20;
 
 - (void)loadDefaults
 {
-    self.isShowAddressBar = YES;
     self.isSwipeBackAndForward = NO;
     self.mediaAllowsInlineMediaPlayback = YES;
     self.mediaPlaybackAllowsAirPlay = YES;
     self.mediaPlaybackRequiresUserAction = YES;
-    self.useAddressBarAsSearchBarWhenAddressNotFound = YES;
     self.isUseHTTPSWhenPossible = NO;
     self.uiWebViewClassType = UIWebView.class;
-    self.isScrollingAddressBar = YES;
-    self.scrollingAddressBarYOffset = kStatusBarHeight;
-    self.toolbarSpacingAlpha = kAlphaStandard;
+    self.addressBar = [SVAddressBarSettings new];
 }
 
 #pragma mark - NSCoding

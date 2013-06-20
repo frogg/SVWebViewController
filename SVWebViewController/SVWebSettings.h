@@ -8,20 +8,19 @@
 
 #import "SVWebViewControllerDelegate.h"
 
+
+@class SVAddressBarSettings;
+
+
 @interface SVWebSettings : NSObject <NSCoding>
 
 @property BOOL mediaPlaybackRequiresUserAction;
 @property BOOL mediaAllowsInlineMediaPlayback;
 @property BOOL mediaPlaybackAllowsAirPlay;
 @property BOOL isSwipeBackAndForward;
-@property BOOL useAddressBarAsSearchBarWhenAddressNotFound;
 @property BOOL isUseHTTPSWhenPossible;
-@property BOOL isShowAddressBar;
 
-#pragma mark Scrolling address bar settings.
-@property BOOL isScrollingAddressBar;
-@property CGFloat toolbarSpacingAlpha;
-@property CGFloat scrollingAddressBarYOffset;
+@property SVAddressBarSettings *addressBar;
 
 @property (nonatomic) id uiWebViewClassType;
 @property (strong) id<UIWebViewDelegate, SVWebViewControllerDelegate> delegate;
