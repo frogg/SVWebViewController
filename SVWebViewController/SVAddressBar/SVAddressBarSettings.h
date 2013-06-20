@@ -6,7 +6,9 @@
 //  Copyright (c) 2013 Digimulti PTY LTD. All rights reserved.
 //
 
-@interface SVAddressBarSettings : NSObject
+#import "SVSettings.h"
+
+@interface SVAddressBarSettings : SVSettings
 
 @property BOOL useAsSearchBarWhenAddressNotFound;
 @property BOOL isHidden;

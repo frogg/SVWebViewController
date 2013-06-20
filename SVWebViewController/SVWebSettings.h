@@ -7,12 +7,13 @@
 //
 
 #import "SVWebViewControllerDelegate.h"
+#import "SVSettings.h"
 
 
 @class SVAddressBarSettings;
 
 
-@interface SVWebSettings : NSObject <NSCoding>
+@interface SVWebSettings : SVSettings
 
 @property BOOL mediaPlaybackRequiresUserAction;
 @property BOOL mediaAllowsInlineMediaPlayback;
