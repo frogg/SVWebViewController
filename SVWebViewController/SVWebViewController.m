@@ -278,6 +278,8 @@
 	[super viewWillAppear:animated];
 	
     self.indicator.center = self.mainWebView.center;
+    
+    [self.navigationController setToolbarHidden:NO animated:animated];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
