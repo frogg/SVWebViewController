@@ -10,6 +10,8 @@
 #import "SVWebViewController.h"
 #import "SVWebSettings.h"
 #import "SVModalWebNavigationBar.h"
+#import "SVAddressBarSettings.h"
+#import "SVAddressBar.h"
 
 
 @interface SVWebViewController()
@@ -20,24 +22,12 @@
 
 @property (nonatomic, strong) SVWebViewController *webViewController;
 
-@property (nonatomic, strong) UILabel* pageTitle;
-@property (nonatomic, strong) UITextField* addressField;
 @property (nonatomic, strong) SVWebSettings *settings;
 
 @property (nonatomic, strong) UIView *statusBarOverlay;
 @property (nonatomic, strong) UIColor *spacerColor;
-@property (nonatomic, strong) UIToolbar *addressToolbar;
-
-@property (nonatomic, strong) UIView *container;
 
 @end
-
-static const CGFloat kLabelHeight = 14.0f;
-static const CGFloat kMargin = 10.0f;
-static const CGFloat kSpacer = 1.0f;
-static const CGFloat kLabelFontSize = 12.0f;
-static const CGFloat kAddressHeight = 26.0f;
-static const CGFloat kNavBarHeight = kSpacer*4 + kLabelHeight + kAddressHeight;
 
 
 @implementation SVModalWebViewController
@@ -57,9 +47,6 @@ static const CGFloat kNavBarHeight = kSpacer*4 + kLabelHeight + kAddressHeight;
 - (id)initWithURL:(NSURL *)URL withSettings:(SVWebSettings *)settings {
     SVWebViewController *webViewController = [[SVWebViewController alloc] initWithURL:URL withSettings:settings];
     self.settings = settings;
-    if (self.settings.isScrollingAddressBar) {
-        [self setNavigationBarHidden:YES];
-    }
     self = [self initWebViewController:webViewController];
     
     return self;
@@ -86,125 +73,23 @@ static const CGFloat kNavBarHeight = kSpacer*4 + kLabelHeight + kAddressHeight;
     return self;
 }
 
-- (void)addScrollingAddressBar
-{
-    if (self.settings.isScrollingAddressBar) {
-        [self addScrollingAddressBar:self.addressToolbar withScrollView:self.webViewController.mainWebView.scrollView];
-        [self.navigationController setNavigationBarHidden:YES];
-    }
-}
-
-- (void)addScrollingAddressBar:(UIView *)addressBar withScrollView:(UIScrollView *)view
-{
-    static NSString * const WEB_BROWSER_CLASS_NAME = @"UIWebBrowserView";
-    for (UIView *webSubView in view.subviews) {
-        if ([WEB_BROWSER_CLASS_NAME isEqualToString:NSStringFromClass(webSubView.class)]) {
-            
-            CGRect containerFrame = self.container.frame;
-            containerFrame.size.width = view.frame.size.width;
-            self.container.frame = containerFrame;
-            
-            if (0!=self.settings.toolbarSpacingAlpha) {
-                CGRect webViewColorFrame;
-                webViewColorFrame.size.width = view.frame.size.width;
-                webViewColorFrame.size.height = self.settings.scrollingAddressBarYOffset;
-                UIView *webViewColor = [[UIView alloc] initWithFrame:webViewColorFrame];
-                webViewColor.backgroundColor = self.webViewController.mainWebView.backgroundColor;
-                [self.container addSubview:webViewColor];
-                
-                CGRect spacingForStatusBar;
-                spacingForStatusBar.size.height = self.settings.scrollingAddressBarYOffset;
-                spacingForStatusBar.size.width = view.frame.size.width;
-                self.statusBarOverlay = [[UIToolbar alloc] initWithFrame:spacingForStatusBar];
-                self.statusBarOverlay.alpha = self.settings.toolbarSpacingAlpha;
-                self.statusBarOverlay.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-                [self.webViewController.mainWebView addSubview:self.statusBarOverlay];
-            }
-            
-            CGRect addressBarFrame = addressBar.frame;
-            addressBarFrame.origin.y = self.settings.scrollingAddressBarYOffset;
-            addressBarFrame.size.width = view.frame.size.width;
-            addressBar.frame = addressBarFrame;
-            
-            [self.webViewController.mainWebView.scrollView addSubview:self.addressToolbar];
-            
-            CGRect webBrowserFrame = webSubView.frame;
-            webBrowserFrame.origin.y = self.addressToolbar.frame.size.height+self.settings.scrollingAddressBarYOffset; // Shift down
-            webSubView.frame = webBrowserFrame;
-        }
-    }
-}
-
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     
-    if (self.settings.isShowAddressBar) {
-        CGRect containerFrame = self.view.bounds;
-        containerFrame.size.height = kNavBarHeight+self.settings.scrollingAddressBarYOffset;
-        self.container = [[UIView alloc] initWithFrame:containerFrame];
+    if (NO==self.settings.addressBar.isHidden) {
         
-        CGRect addressBarFrame = self.view.bounds;
-        addressBarFrame.size.height = kNavBarHeight;
-        addressBarFrame.origin.y = self.settings.scrollingAddressBarYOffset;
-        self.addressToolbar = [[UIToolbar alloc] initWithFrame:addressBarFrame];
-        self.addressToolbar.alpha = self.settings.toolbarSpacingAlpha;
-        self.addressToolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        
-        self.pageTitle =  [self createTitleWithNavBar:self.addressToolbar];
-        [self.addressToolbar addSubview:self.pageTitle];
-        
-        self.addressField = [self createAddressFieldWithToolBar:self.addressToolbar];
-        [self.addressToolbar addSubview:self.addressField];
-        
-        [self.container addSubview:self.addressToolbar];
-        
-        [self.navigationBar addSubview:self.addressToolbar];
+        if (self.settings.addressBar.isScrolling) {
+            [self setNavigationBarHidden:YES];
+            
+        } else {
+            self.settings.addressBar.tintColor = self.barsTintColor;
+            self.webViewController.addressBar = [[SVAddressBar alloc] initWithSettings:self.settings.addressBar];
+            [self addChildViewController:self.webViewController.addressBar];
+            [self.navigationBar addSubview:self.webViewController.addressBar.view];
+            [self.webViewController.addressBar didMoveToParentViewController:self];
+        }
     }
-}
-
-- (UILabel *)createTitleWithNavBar:(UIToolbar *)toolBar
-{
-    CGRect labelFrame = CGRectMake(kMargin, kSpacer,
-                                   toolBar.bounds.size.width - 2*kMargin, kLabelHeight);
-    UILabel *label = [[UILabel alloc] initWithFrame:labelFrame];
-    
-    label.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    label.backgroundColor = [UIColor clearColor];
-    label.font = [UIFont systemFontOfSize:12];
-    label.textAlignment = NSTextAlignmentCenter;
-    label.restorationIdentifier = NSStringFromClass(label.class);
-    
-    return label;
-}
-
-- (UITextField *)createAddressFieldWithToolBar:(UIToolbar *)toolBar
-{
-    const NSUInteger WIDTH_OF_NETWORK_ACTIVITY_ANIMATION=4;
-    CGRect addressFrame = CGRectMake(kMargin, kSpacer*1.5 + kLabelHeight,
-                                     toolBar.bounds.size.width - WIDTH_OF_NETWORK_ACTIVITY_ANIMATION*kMargin, kAddressHeight);
-    UITextField *address = [[UITextField alloc] initWithFrame:addressFrame];
-    
-    address.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    address.borderStyle = UITextBorderStyleRoundedRect;
-    address.font = [UIFont systemFontOfSize:17];
-    if (self.settings.useAddressBarAsSearchBarWhenAddressNotFound) {
-        address.keyboardType = UIKeyboardTypeDefault;
-        
-    } else {
-        address.keyboardType = UIKeyboardTypeURL;
-    }
-    address.autocapitalizationType = UITextAutocapitalizationTypeNone;
-    address.autocorrectionType = UITextAutocorrectionTypeNo;
-    address.clearButtonMode = UITextFieldViewModeWhileEditing;
-    
-    [address addTarget:self
-                action:@selector(loadAddress:event:)
-      forControlEvents:UIControlEventEditingDidEndOnExit];
-    
-    address.restorationIdentifier = NSStringFromClass(address.class);
-    
-    return address;
 }
 
 - (void)setAndLoadAddress:(NSURLRequest *)request
@@ -221,7 +106,7 @@ static const CGFloat kNavBarHeight = kSpacer*4 + kLabelHeight + kAddressHeight;
 - (void)loadAddress:(id)sender event:(UIEvent *)event
 {
     NSMutableURLRequest* request;
-    NSString *urlString = self.addressField.text;
+    NSString *urlString = self.webViewController.addressBar.addressField.text;
     if (NSNotFound!=[urlString rangeOfString:@" "].location
         || NSNotFound==[urlString rangeOfString:@"."].location) {
         urlString = [self.webViewController getSearchQuery:urlString];
@@ -255,14 +140,14 @@ static const CGFloat kNavBarHeight = kSpacer*4 + kLabelHeight + kAddressHeight;
 - (void)updateTitle:(UIWebView *)webView
 {
     NSString* pageTitle = [webView stringByEvaluatingJavaScriptFromString:@"document.title"];
-    self.pageTitle.text = pageTitle;
+    self.webViewController.addressBar.pageTitle.text = pageTitle;
 }
 
 - (void)updateAddress:(NSURL *)sourceURL
 {
     if (NO==[self.webViewController isAddressAJavascriptEvaluation:sourceURL]) {
-        if (NO==self.addressField.editing) {
-            self.addressField.text = sourceURL.absoluteString;
+        if (NO==self.webViewController.addressBar.addressField.editing) {
+            self.webViewController.addressBar.addressField.text = sourceURL.absoluteString;
         }
     }
 }
@@ -270,7 +155,6 @@ static const CGFloat kNavBarHeight = kSpacer*4 + kLabelHeight + kAddressHeight;
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:NO];
     self.navigationBar.tintColor = self.barsTintColor;
-    self.addressToolbar.tintColor = self.barsTintColor;
     self.toolbar.tintColor = self.barsTintColor;
 }
 
@@ -307,17 +191,11 @@ static const CGFloat kNavBarHeight = kSpacer*4 + kLabelHeight + kAddressHeight;
 
 - (void)encodeRestorableStateWithCoder:(NSCoder *)coder
 {
-    [super encodeRestorableStateWithCoder:coder];
-    
     [coder encodeObject:self.webViewController forKey:[SVModalWebViewController KEY_WEBVIEW_CONTROLLER]];
     
-    [coder encodeObject:self.pageTitle forKey:NSStringFromClass(self.pageTitle.class)];
-    [coder encodeObject:self.pageTitle.text forKey:[SVModalWebViewController KEY_PAGE_TITLE]];
-    
-    [coder encodeObject:self.addressField forKey:NSStringFromClass(self.addressField.class)];
-    [coder encodeObject:self.addressField.text forKey:[SVModalWebViewController KEY_ADDRESS_FIELD]];
-    
     [coder encodeObject:self.settings forKey:NSStringFromClass(SVWebSettings.class)];
+    
+    [super encodeRestorableStateWithCoder:coder];
 }
 
 - (void)decodeRestorableStateWithCoder:(NSCoder *)coder
@@ -325,28 +203,12 @@ static const CGFloat kNavBarHeight = kSpacer*4 + kLabelHeight + kAddressHeight;
     [super decodeRestorableStateWithCoder:coder];
     
     self.webViewController = [coder decodeObjectForKey:[SVModalWebViewController KEY_WEBVIEW_CONTROLLER]];
-    
-    self.pageTitle = [coder decodeObjectForKey:NSStringFromClass(UILabel.class)];
-    self.pageTitle.text = [coder decodeObjectForKey:[SVModalWebViewController KEY_PAGE_TITLE]];
-    
-    self.addressField = [coder decodeObjectForKey:NSStringFromClass(UITextField.class)];
-    self.addressField.text = [coder decodeObjectForKey:[SVModalWebViewController KEY_ADDRESS_FIELD]];
 }
 
 #pragma mark Key constants used by the coder.
 + (NSString *)KEY_WEBVIEW_CONTROLLER
 {
     return @"KEY_WEBVIEW_CONTROLLER";
-}
-
-+ (NSString *)KEY_PAGE_TITLE
-{
-    return @"KEY_PAGE_TITLE";
-}
-
-+ (NSString *)KEY_ADDRESS_FIELD
-{
-    return @"KEY_ADDRESS_FIELD";
 }
 
 @end

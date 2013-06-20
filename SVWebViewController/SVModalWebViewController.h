@@ -31,14 +31,6 @@ typedef NSUInteger SVWebViewControllerAvailableActions;
 
 - (void)retrySimpleAuthentication;
 
-#pragma mark Called by the SVWebViewController once the webview has created it's UIWebBrowser subview.
-- (void)addScrollingAddressBar;
-
-
-#pragma mark - Address Bar
-@property (nonatomic, strong, readonly) UILabel* pageTitle;
-@property (nonatomic, strong, readonly) UITextField* addressField;
-
 #pragma mark Update the title in the nav bar.
 - (void)updateTitle:(UIWebView *)webView;
 #pragma mark Update the address in the nav bar.
