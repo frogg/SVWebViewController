@@ -12,7 +12,7 @@
 
 @class SVWebSettings, SVAddressBar;
 
-@interface SVWebViewController : UIViewController <UISplitViewControllerDelegate, UIGestureRecognizerDelegate, UIWebViewDelegate, UIViewControllerRestoration>
+@interface SVWebViewController : UIViewController <UIGestureRecognizerDelegate, UIWebViewDelegate, UIViewControllerRestoration>
 
 - (id)initWithAddress:(NSString*)urlString;
 - (id)initWithURL:(NSURL*)URL;
