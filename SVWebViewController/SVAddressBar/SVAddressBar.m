@@ -61,7 +61,6 @@ static NSString * const kAddressToolbar = @"kAddressToolbar";
     
     CGRect addressBarFrame = self.view.bounds;
     addressBarFrame.size.height = kNavBarHeight;
-    addressBarFrame.origin.y = self.settings.scrollingYOffset;
     self.addressToolbar = [[UIToolbar alloc] initWithFrame:addressBarFrame];
     self.addressToolbar.restorationIdentifier = kAddressToolbar;
     self.addressToolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
