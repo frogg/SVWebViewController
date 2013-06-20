@@ -215,10 +215,9 @@
 - (void)loadView {
     [super loadView];
     
-    UIWebView *uiWebView = [[self.settings.uiWebViewClassType alloc] initWithFrame:self.view.frame];
-    uiWebView.restorationIdentifier=NSStringFromClass(uiWebView.class);
-    self.view = uiWebView;
-    self.mainWebView = uiWebView;
+    self.mainWebView = [[self.settings.uiWebViewClassType alloc] initWithFrame:self.view.frame];
+    self.mainWebView.restorationIdentifier=NSStringFromClass(self.mainWebView.class);
+    self.view = self.mainWebView;
     
     if (nil!=self.URL) {
         [self loadURL:self.URL];
@@ -231,8 +230,11 @@
         self.settings.addressBar.webViewBackgroundColor = self.mainWebView.backgroundColor;
         self.addressBar = [[SVAddressBar alloc] initWithSettings:[SVAddressBarSettings new]];
         [self addChildViewController:self.addressBar];
-        [self.mainWebView.scrollView addSubview:self.addressBar.view];
+        [self.view addSubview:self.addressBar.view];
         [self.addressBar didMoveToParentViewController:self];
+        
+        [self.mainWebView.scrollView setContentInset:UIEdgeInsetsMake(self.addressBar.view.frame.size.height+self.settings.addressBar.scrollingYOffset, 0, 0, 0)];
+        [self.mainWebView.scrollView addObserver:self forKeyPath:@"contentOffset" options:NSKeyValueObservingOptionNew context:nil];
         
         CGRect spacingForStatusBar;
         spacingForStatusBar.size.height = self.settings.addressBar.scrollingYOffset;
@@ -240,7 +242,7 @@
         UIToolbar *statusBarOverlay = [[UIToolbar alloc] initWithFrame:spacingForStatusBar];
         statusBarOverlay.alpha = self.settings.addressBar.toolbarSpacingAlpha;
         statusBarOverlay.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        [self.mainWebView addSubview:statusBarOverlay];
+        [self.view addSubview:statusBarOverlay];
     }
     
     self.indicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
@@ -276,12 +278,6 @@
 	[super viewWillAppear:animated];
 	
     self.indicator.center = self.mainWebView.center;
-    
-    [self.navigationController setToolbarHidden:NO animated:animated];
-    
-    if (self.settings.addressBar.isScrolling) {
-        [self addScrollingAddressBar];
-    }
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -311,6 +307,7 @@
     mainWebView.delegate = nil;
 }
 
+
 #pragma mark - Media player settings
 
 - (void)setupMediaSettings
@@ -320,6 +317,7 @@
     if([mainWebView respondsToSelector:@selector(mediaPlaybackAllowsAirPlay)])
         mainWebView.mediaPlaybackAllowsAirPlay = self.settings.mediaPlaybackAllowsAirPlay;
 }
+
 
 #pragma mark - Gestures
 
@@ -352,19 +350,25 @@
 }
 
 
-#pragma mark - Addressbar
+#pragma mark - Scrolling address bar
 
-- (void)addScrollingAddressBar
+- (void)observeValueForKeyPath:(NSString *)keyPath
+					  ofObject:(id)object
+						change:(NSDictionary *)change
+					   context:(void *)context
 {
-    if (self.settings.addressBar.isScrolling) {
-        static NSString * const WEB_BROWSER_CLASS_NAME = @"UIWebBrowserView";
-        for (UIView *webSubView in self.mainWebView.scrollView.subviews) {
-            if ([WEB_BROWSER_CLASS_NAME isEqualToString:NSStringFromClass(webSubView.class)]) {
-                CGRect webBrowserFrame = webSubView.frame;
-                webBrowserFrame.origin.y = self.addressBar.view.frame.size.height;//+self.settings.addressBar.scrollingYOffset; // Shift down
-                webSubView.frame = webBrowserFrame;
-            }
-        }
+	[self scrollViewDidScroll];
+}
+
+- (void)scrollViewDidScroll
+{
+    if (self.mainWebView.scrollView.contentOffset.y<-self.addressBar.view.frame.size.height-self.settings.addressBar.scrollingYOffset) {
+        self.addressBar.view.frame = CGRectMake(0, 0, self.addressBar.view.frame.size.width, self.addressBar.view.frame.size.height);
+        
+    } else {
+        CGRect addressBarFrame = self.addressBar.view.frame;
+        addressBarFrame.origin.y = -self.mainWebView.scrollView.contentOffset.y-self.addressBar.view.frame.size.height-self.settings.addressBar.scrollingYOffset;
+        self.addressBar.view.frame = addressBarFrame;
     }
 }
 
