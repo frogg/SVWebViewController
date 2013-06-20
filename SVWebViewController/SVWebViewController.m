@@ -9,6 +9,8 @@
 #import "SVWebViewController.h"
 #import "SVWebSettings.h"
 #import "SVModalWebViewController.h"
+#import "SVAddressBar.h"
+#import "SVAddressBarSettings.h"
 
 @interface SVWebViewController () <UIWebViewDelegate, UIActionSheetDelegate, MFMailComposeViewControllerDelegate, UISplitViewControllerDelegate>
 
@@ -207,6 +209,7 @@
     [self loadURL:[NSURL URLWithString:address]];
 }
 
+
 #pragma mark - View lifecycle
 
 - (void)loadView {
@@ -224,6 +227,21 @@
     self.mainWebView.delegate = self;
     self.mainWebView.scalesPageToFit = YES;
     
+    if (self.settings.addressBar.isScrolling) {
+        self.settings.addressBar.webViewBackgroundColor = self.mainWebView.backgroundColor;
+        self.addressBar = [[SVAddressBar alloc] initWithSettings:[SVAddressBarSettings new]];
+        [self addChildViewController:self.addressBar];
+        [self.mainWebView.scrollView addSubview:self.addressBar.view];
+        [self.addressBar didMoveToParentViewController:self];
+        
+        CGRect spacingForStatusBar;
+        spacingForStatusBar.size.height = self.settings.addressBar.scrollingYOffset;
+        spacingForStatusBar.size.width = self.view.frame.size.width;
+        UIToolbar *statusBarOverlay = [[UIToolbar alloc] initWithFrame:spacingForStatusBar];
+        statusBarOverlay.alpha = self.settings.addressBar.toolbarSpacingAlpha;
+        statusBarOverlay.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        [self.mainWebView addSubview:statusBarOverlay];
+    }
     
     self.indicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
     self.indicator.hidesWhenStopped = YES;
@@ -261,10 +279,8 @@
     
     [self.navigationController setToolbarHidden:NO animated:animated];
     
-    if (self.settings.isScrollingAddressBar) {
-        NSAssert([self.navigationController isKindOfClass:SVModalWebViewController.class], @"SVWebViewController needs to be contained within a SVModalWebViewController to be able to use a scrolling address bar.");
-        SVModalWebViewController *modalView = (SVModalWebViewController *)self.navigationController;
-        [modalView addScrollingAddressBar];
+    if (self.settings.addressBar.isScrolling) {
+        [self addScrollingAddressBar];
     }
 }
 
@@ -334,6 +350,24 @@
 {
     [self.mainWebView goForward];
 }
+
+
+#pragma mark - Addressbar
+
+- (void)addScrollingAddressBar
+{
+    if (self.settings.addressBar.isScrolling) {
+        static NSString * const WEB_BROWSER_CLASS_NAME = @"UIWebBrowserView";
+        for (UIView *webSubView in self.mainWebView.scrollView.subviews) {
+            if ([WEB_BROWSER_CLASS_NAME isEqualToString:NSStringFromClass(webSubView.class)]) {
+                CGRect webBrowserFrame = webSubView.frame;
+                webBrowserFrame.origin.y = self.addressBar.view.frame.size.height;//+self.settings.addressBar.scrollingYOffset; // Shift down
+                webSubView.frame = webBrowserFrame;
+            }
+        }
+    }
+}
+
 
 #pragma mark - Toolbar
 #pragma mark UIWebView.isLoading returns YES when a page has successfully finished loading via HTML5, ie a custom argument is used.
@@ -647,13 +681,13 @@ NSString * const PROGRESS_ESTIMATE_KEY=@"WebProgressEstimatedProgressKey";
 
 - (void)encodeRestorableStateWithCoder:(NSCoder *)coder
 {
-    [super encodeRestorableStateWithCoder:coder];
-    
     [coder encodeObject:self.navigationController forKey:NSStringFromClass(UINavigationController.class)];
     
     [coder encodeObject:self.settings forKey:NSStringFromClass(self.settings.class)];
     [coder encodeObject:self.URL forKey:[SVWebViewController KEY_URL]];
     [coder encodeObject:self.mainWebView forKey:[SVWebViewController KEY_WEBVIEW]];
+    
+    [super encodeRestorableStateWithCoder:coder];
 }
 
 - (void)decodeRestorableStateWithCoder:(NSCoder *)coder

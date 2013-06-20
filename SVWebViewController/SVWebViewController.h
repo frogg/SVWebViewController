@@ -10,7 +10,7 @@
 
 #import "SVModalWebViewController.h"
 
-@class SVWebSettings;
+@class SVWebSettings, SVAddressBar;
 
 @interface SVWebViewController : UIViewController <UISplitViewControllerDelegate, UIGestureRecognizerDelegate, UIWebViewDelegate, UIViewControllerRestoration>
 
@@ -44,5 +44,7 @@
 @property (readonly) BOOL isSecureHTTPinUse;
 @property (readonly) BOOL isLoadingPage;
 @property (readonly, strong) NSString *currentPageAddress;
+
+@property (nonatomic, strong) SVAddressBar *addressBar;
 
 @end
