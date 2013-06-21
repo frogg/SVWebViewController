@@ -45,12 +45,6 @@ static NSString * const kAddressToolbar = @"kAddressToolbar";
 {
     if (self = [self init]) {
         self.settings = settings;
-        
-        CGRect addressBarBounds = self.view.bounds;
-        addressBarBounds.size.height = kNavBarHeight;
-        self.view.frame = addressBarBounds;
-        self.view.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        self.view.restorationIdentifier = kSVAddressBar;
     }
     return self;
 }
@@ -59,8 +53,15 @@ static NSString * const kAddressToolbar = @"kAddressToolbar";
 {
     [super loadView];
     
+    CGRect addressBarBounds = self.view.bounds;
+    addressBarBounds.size.height = kNavBarHeight+self.settings.scrollingYOffset;
+    self.view.frame = addressBarBounds;
+    self.view.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    self.view.restorationIdentifier = kSVAddressBar;
+    
     CGRect addressBarFrame = self.view.bounds;
     addressBarFrame.size.height = kNavBarHeight;
+    addressBarFrame.origin.y = self.settings.scrollingYOffset;
     self.addressToolbar = [[UIToolbar alloc] initWithFrame:addressBarFrame];
     self.addressToolbar.restorationIdentifier = kAddressToolbar;
     self.addressToolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -71,9 +72,7 @@ static NSString * const kAddressToolbar = @"kAddressToolbar";
     self.addressField = [self createAddressFieldWithToolBar:self.addressToolbar];
     [self.addressToolbar addSubview:self.addressField];
     
-    if (self.settings.isScrolling) {
-        [self scrollingAddress:self.view withAddressBar:self.addressToolbar];
-    }
+    [self scrollingAddress:self.view withAddressBar:self.addressToolbar];
     
     [self.view addSubview:self.addressToolbar];
 }
