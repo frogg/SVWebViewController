@@ -1,8 +1,8 @@
 //
 //  SVAddressBarSettings.m
-//  Videohog-iOS
 //
-//  Created by eggers on 20/06/13.
+//
+//  Created by Ben Pettit on 20/06/13.
 //  Copyright (c) 2013 Digimulti PTY LTD. All rights reserved.
 //
 
@@ -20,7 +20,7 @@ static const NSInteger kStatusBarHeight = 20;
         self.isUseAsSearchBarWhenAddressNotFound = YES;
         self.isHidden = NO;
         if (UIUserInterfaceIdiomPhone == [[UIDevice currentDevice] userInterfaceIdiom]) {
-            self.isScrolling = YES;
+            self.isScrolling = NO;
             
         } else {
             self.isScrolling = NO;
