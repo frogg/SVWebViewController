@@ -7,10 +7,13 @@
 //
 
 #import "SVSettings.h"
+#import "SVAddressBarDelegate.h"
+
 
 @interface SVAddressBarSettings : SVSettings
 
-@property BOOL useAsSearchBarWhenAddressNotFound;
+@property BOOL isUseHTTPSWhenNotDefined;
+@property BOOL isUseAsSearchBarWhenAddressNotFound;
 @property BOOL isHidden;
 
 @property BOOL isScrolling;
@@ -19,5 +22,7 @@
 @property UIColor *webViewBackgroundColor;
 
 @property UIColor *tintColor;
+
+@property (strong) NSObject<SVAddressBarDelegate> *delegate;
 
 @end

@@ -17,12 +17,19 @@ static const NSInteger kStatusBarHeight = 20;
 - (SVAddressBarSettings *)init
 {
     if (self = [super init]) {
-        self.useAsSearchBarWhenAddressNotFound = YES;
+        self.isUseAsSearchBarWhenAddressNotFound = YES;
         self.isHidden = NO;
-        self.isScrolling = YES;
+        if (UIUserInterfaceIdiomPhone == [[UIDevice currentDevice] userInterfaceIdiom]) {
+            self.isScrolling = YES;
+            
+        } else {
+            self.isScrolling = NO;
+        }
         self.scrollingYOffset = kStatusBarHeight;
         self.toolbarSpacingAlpha = kAlphaStandard;
     }
+    self.isUseHTTPSWhenNotDefined = NO;
+    
     return self;
 }
 
