@@ -1,8 +1,8 @@
 //
 //  SVAddressBarDelegate.h
-//  Videohog-iOS
 //
-//  Created by eggers on 21/06/13.
+//
+//  Created by Ben Pettit on 21/06/13.
 //  Copyright (c) 2013 Digimulti PTY LTD. All rights reserved.
 //
 
