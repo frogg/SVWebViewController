@@ -1,6 +1,6 @@
 //
 //  SVWebSettings.m
-//  SVWeb
+//
 //
 //  Created by Ben Pettit on 13/12/12.
 //  Copyright 2012 Digimulti. All rights reserved.
@@ -24,7 +24,6 @@
 
 - (void)loadDefaults
 {
-    self.isSwipeBackAndForward = NO;
     self.mediaAllowsInlineMediaPlayback = YES;
     self.mediaPlaybackAllowsAirPlay = YES;
     self.mediaPlaybackRequiresUserAction = YES;
