@@ -1,18 +1,19 @@
 //
 //  SVWebViewController.h
 //
-//  Created by Sam Vermette on 08.11.10.
-//  Copyright 2010 Sam Vermette. All rights reserved.
+//  Created by Ben Pettit on 24/06/2013
+//  Copyright (c) 2013 Digimulti PTY LTD. All rights reserved.
 //
 //  https://github.com/samvermette/SVWebViewController
 
 #import <MessageUI/MessageUI.h>
 
 #import "SVModalWebViewController.h"
+#import "SVAddressBarDelegate.h"
 
 @class SVWebSettings, SVAddressBar;
 
-@interface SVWebViewController : UIViewController <UIGestureRecognizerDelegate, UIWebViewDelegate, UIViewControllerRestoration>
+@interface SVWebViewController : UIViewController <UIGestureRecognizerDelegate, UIWebViewDelegate, UIViewControllerRestoration, SVAddressBarDelegate>
 
 - (id)initWithAddress:(NSString*)urlString;
 - (id)initWithURL:(NSURL*)URL;
@@ -28,12 +29,13 @@
 
 #pragma mark - Misc functions
 
+#pragma mark Update the address in the nav bar.
+- (void)updateAddress:(NSURL *)sourceURL;
+
 #pragma mark Reload
 - (void)reload;
 
 - (BOOL)isAddressAJavascriptEvaluation:(NSURL *)sourceURL;
-- (NSString *)getSearchQuery:(NSString *)urlString;
-- (NSMutableURLRequest *)requestForAttemptingHTTPS:(NSMutableURLRequest *)newRequest;
 
 @property (nonatomic, readwrite) SVWebViewControllerAvailableActions availableActions;
 @property (strong, nonatomic) UIPopoverController *masterPopoverController;

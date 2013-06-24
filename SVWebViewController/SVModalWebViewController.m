@@ -1,10 +1,10 @@
 //
 //  SVModalWebViewController.m
 //
-//  Created by Oliver Letterer on 13.08.11.
-//  Copyright 2011 Home. All rights reserved.
+//  Created by Ben Pettit on 24/06/2013
+//  Copyright (c) 2013 Digimulti PTY LTD. All rights reserved.
 //
-//  https://github.com/samvermette/SVWebViewController
+//  https://github.com/pellet/SVWebViewController
 
 #import "SVModalWebViewController.h"
 #import "SVWebViewController.h"
@@ -73,83 +73,15 @@
     return self;
 }
 
-- (void)viewDidLoad
+- (void)loadView
 {
-    [super viewDidLoad];
-    
-    if (NO==self.settings.addressBar.isHidden) {
-        
-        if (self.settings.addressBar.isScrolling) {
-            [self setNavigationBarHidden:YES];
-            
-        } else {
-            self.settings.addressBar.tintColor = self.barsTintColor;
-            self.webViewController.addressBar = [[SVAddressBar alloc] initWithSettings:self.settings.addressBar];
-            [self addChildViewController:self.webViewController.addressBar];
-            [self.navigationBar addSubview:self.webViewController.addressBar.view];
-            [self.webViewController.addressBar didMoveToParentViewController:self];
-        }
-    }
-}
-
-- (void)setAndLoadAddress:(NSURLRequest *)request
-{
-    [self updateAddress:request.URL];
-    [self loadAddress:self event:nil];
+    [super loadView];
+    [self setNavigationBarHidden:YES];
 }
 
 - (void)retrySimpleAuthentication
 {
-    [self loadAddress:self event:nil];
-}
-
-- (void)loadAddress:(id)sender event:(UIEvent *)event
-{
-    NSMutableURLRequest* request;
-    NSString *urlString = self.webViewController.addressBar.addressField.text;
-    if (NSNotFound!=[urlString rangeOfString:@" "].location
-        || NSNotFound==[urlString rangeOfString:@"."].location) {
-        urlString = [self.webViewController getSearchQuery:urlString];
-        request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlString]];
-        
-    } else {
-        if (0 ==[urlString rangeOfString:@"http://" options:NSCaseInsensitiveSearch].location) {
-            request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlString]];
-            
-        } else if (0 ==[urlString rangeOfString:@"https://" options:NSCaseInsensitiveSearch].location) {
-            request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlString]];
-            
-        } else {
-            if (self.settings.isUseHTTPSWhenPossible) {
-                urlString = [@"https://" stringByAppendingString:urlString];
-                request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlString]];
-                request = [self.webViewController requestForAttemptingHTTPS:request];
-                
-            } else {
-                urlString = [@"http://" stringByAppendingString:urlString];
-                request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlString]];
-            }
-        }
-    }
-    
-    [self updateAddress:request.URL];
-    
-    [self.webViewController loadRequest:request];
-}
-
-- (void)updateTitle:(UIWebView *)webView
-{
-    NSString* pageTitle = [webView stringByEvaluatingJavaScriptFromString:@"document.title"];
-    self.webViewController.addressBar.pageTitle.text = pageTitle;
-}
-
-- (void)updateAddress:(NSURL *)sourceURL
-{
-    if (NO==[self.webViewController isAddressAJavascriptEvaluation:sourceURL]) {
-        if (NO==self.webViewController.addressBar.addressField.editing) {
-            self.webViewController.addressBar.addressField.text = sourceURL.absoluteString;
-        }
-    }
+    [self.webViewController.addressBar loadAddress];
 }
 
 - (void)viewWillAppear:(BOOL)animated {

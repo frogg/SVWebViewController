@@ -1,6 +1,6 @@
 //
 //  SVAddressBar.m
-//  Videohog-iOS
+//
 //
 //  Created by Ben Pettit on 20/06/13.
 //  Copyright (c) 2013 Digimulti PTY LTD. All rights reserved.
@@ -8,6 +8,7 @@
 
 #import "SVAddressBar.h"
 #import "SVAddressBarSettings.h"
+#import "SVHelper.h"
 
 
 #pragma mark - Private Declaration
@@ -44,10 +45,62 @@ static NSString * const kAddressToolbar = @"kAddressToolbar";
 - (SVAddressBar *)initWithSettings:(SVAddressBarSettings *)settings
 {
     if (self = [self init]) {
+        NSAssert([settings.delegate conformsToProtocol:@protocol(SVAddressBarDelegate)], @"A delegate which conforms to the SVAddressBarDelegate has not yet been set.");
         self.settings = settings;
     }
     return self;
 }
+
+
+#pragma mark - Public methods
+
+- (void)setAddressURL:(NSURL *)address
+{
+    if (NO==self.addressField.editing) {
+        self.addressField.text = address.absoluteString;
+    }
+    _addressURL = address;
+}
+
+- (void)loadAddress
+{
+    NSMutableURLRequest* request;
+    NSString *urlString = self.addressField.text;
+    if (NSNotFound!=[urlString rangeOfString:@" "].location
+        || NSNotFound==[urlString rangeOfString:@"."].location) {
+        urlString = [self getSearchQuery:urlString];
+        request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlString]];
+        
+    } else {
+        if (0 ==[urlString rangeOfString:@"http://" options:NSCaseInsensitiveSearch].location) {
+            request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlString]];
+            
+        } else if (0 ==[urlString rangeOfString:@"https://" options:NSCaseInsensitiveSearch].location) {
+            request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlString]];
+            
+        } else {
+            if (self.settings.isUseHTTPSWhenNotDefined) {
+                urlString = [@"https://" stringByAppendingString:urlString];
+                request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlString]];
+                request = [SVHelper requestForAttemptingHTTPS:request];
+                
+            } else {
+                urlString = [@"http://" stringByAppendingString:urlString];
+                request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlString]];
+            }
+        }
+    }
+    
+    [self.settings.delegate addressModified:request];
+}
+
+- (void)updateTitle:(UIWebView *)webView
+{
+    self.pageTitle.text = [webView stringByEvaluatingJavaScriptFromString:@"document.title"];
+}
+
+
+#pragma mark - View setup
 
 - (void)loadView
 {
@@ -58,8 +111,9 @@ static NSString * const kAddressToolbar = @"kAddressToolbar";
     self.view.frame = addressBarBounds;
     self.view.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     self.view.restorationIdentifier = kSVAddressBar;
+    [self.view setClipsToBounds:YES];
     
-    CGRect addressBarFrame = self.view.bounds;
+    CGRect addressBarFrame = self.view.frame;
     addressBarFrame.size.height = kNavBarHeight;
     addressBarFrame.origin.y = self.settings.scrollingYOffset;
     self.addressToolbar = [[UIToolbar alloc] initWithFrame:addressBarFrame];
@@ -123,7 +177,7 @@ static NSString * const kAddressToolbar = @"kAddressToolbar";
     address.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     address.borderStyle = UITextBorderStyleRoundedRect;
     address.font = [UIFont systemFontOfSize:17];
-    if (self.settings.useAsSearchBarWhenAddressNotFound) {
+    if (self.settings.isUseAsSearchBarWhenAddressNotFound) {
         address.keyboardType = UIKeyboardTypeDefault;
         
     } else {
@@ -142,6 +196,38 @@ static NSString * const kAddressToolbar = @"kAddressToolbar";
     return address;
 }
 
+- (void)setIsHidden:(BOOL)isHidden
+{
+    CGRect addressBarBounds = self.view.frame;
+    if (isHidden) {
+        addressBarBounds.size.height = 0;
+        _isHidden=YES;
+        
+    } else {
+        addressBarBounds.size.height = kNavBarHeight+self.settings.scrollingYOffset;
+        _isHidden=NO;
+    }
+    self.view.frame = addressBarBounds;
+    
+    [self.settings.delegate addressBarHidden:isHidden];
+}
+
+#pragma mark - Privates
+
+- (void)loadAddress:(id)sender event:(UIEvent *)event
+{
+    [self loadAddress];
+}
+
+- (NSString *)getSearchQuery:(NSString *)urlString
+{
+    NSString *translatedToGoogleSearchQuery=nil;
+    
+    NSString *encodedSearchTerm = [urlString stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding];
+    translatedToGoogleSearchQuery = [NSString stringWithFormat:@"https://encrypted.google.com/search?q=%@",encodedSearchTerm];
+    
+    return translatedToGoogleSearchQuery;
+}
 
 #pragma mark - UI State Restoration
 

@@ -1,16 +1,17 @@
 //
 //  SVWebViewController.m
 //
-//  Created by Sam Vermette on 08.11.10.
-//  Copyright 2010 Sam Vermette. All rights reserved.
+//  Created by Ben Pettit on 24/06/2013
+//  Copyright (c) 2013 Digimulti PTY LTD. All rights reserved.
 //
-//  https://github.com/samvermette/SVWebViewController
+//  https://github.com/pellet/SVWebViewController
 
 #import "SVWebViewController.h"
 #import "SVWebSettings.h"
 #import "SVModalWebViewController.h"
 #import "SVAddressBar.h"
 #import "SVAddressBarSettings.h"
+#import "SVHelper.h"
 
 @interface SVWebViewController () <UIWebViewDelegate, UIActionSheetDelegate, MFMailComposeViewControllerDelegate, UISplitViewControllerDelegate>
 
@@ -39,6 +40,8 @@
 - (void)reloadClicked:(UIBarButtonItem *)sender;
 - (void)stopClicked:(UIBarButtonItem *)sender;
 - (void)actionButtonClicked:(UIBarButtonItem *)sender;
+
+@property (strong) UIView *testView;
 
 @end
 
@@ -134,6 +137,7 @@
     return pageActionSheet;
 }
 
+
 #pragma mark - Initialization
 
 - (id)initWithAddress:(NSString *)urlString {
@@ -212,12 +216,26 @@
 
 #pragma mark - View lifecycle
 
-- (void)loadView {
+- (void)loadView
+{
     [super loadView];
     
-    self.mainWebView = [[self.settings.uiWebViewClassType alloc] initWithFrame:self.view.frame];
+        //    self.settings.addressBar.webViewBackgroundColor = self.mainWebView.backgroundColor;
+    self.settings.addressBar.isUseHTTPSWhenNotDefined = self.settings.isUseHTTPSWhenPossible;
+    self.settings.addressBar.delegate = self;
+    self.addressBar = [[SVAddressBar alloc] initWithSettings:self.settings.addressBar];
+    
+    [self addChildViewController:self.addressBar];
+    [self.view addSubview:self.addressBar.view];
+    [self.addressBar didMoveToParentViewController:self];
+    
+    self.mainWebView = [self.settings.uiWebViewClassType new];
+    [self.mainWebView setClipsToBounds:YES];
     self.mainWebView.restorationIdentifier=NSStringFromClass(self.mainWebView.class);
-    self.view = self.mainWebView;
+    
+    if (self.settings.addressBar.isScrolling) {
+        [self.mainWebView.scrollView addObserver:self forKeyPath:@"contentOffset" options:NSKeyValueObservingOptionNew context:nil];
+    }
     
     if (nil!=self.URL) {
         [self loadURL:self.URL];
@@ -226,24 +244,17 @@
     self.mainWebView.delegate = self;
     self.mainWebView.scalesPageToFit = YES;
     
-    if (self.settings.addressBar.isScrolling) {
-        self.settings.addressBar.webViewBackgroundColor = self.mainWebView.backgroundColor;
-        self.addressBar = [[SVAddressBar alloc] initWithSettings:[SVAddressBarSettings new]];
-        [self addChildViewController:self.addressBar];
-        [self.view addSubview:self.addressBar.view];
-        [self.addressBar didMoveToParentViewController:self];
-        
-        [self.mainWebView.scrollView setContentInset:UIEdgeInsetsMake(self.addressBar.view.frame.size.height+self.settings.addressBar.scrollingYOffset, 0, 0, 0)];
-        [self.mainWebView.scrollView addObserver:self forKeyPath:@"contentOffset" options:NSKeyValueObservingOptionNew context:nil];
-        
-        CGRect spacingForStatusBar;
-        spacingForStatusBar.size.height = self.settings.addressBar.scrollingYOffset;
-        spacingForStatusBar.size.width = self.view.frame.size.width;
-        UIToolbar *statusBarOverlay = [[UIToolbar alloc] initWithFrame:spacingForStatusBar];
-        statusBarOverlay.alpha = self.settings.addressBar.toolbarSpacingAlpha;
-        statusBarOverlay.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        [self.view addSubview:statusBarOverlay];
-    }
+    [self setupMediaSettings];
+    
+    [self.view addSubview:self.mainWebView];
+    
+    CGRect spacingForStatusBar;
+    spacingForStatusBar.size.height = self.settings.addressBar.scrollingYOffset;
+    spacingForStatusBar.size.width = self.view.frame.size.width;
+    UIToolbar *statusBarOverlay = [[UIToolbar alloc] initWithFrame:spacingForStatusBar];
+    statusBarOverlay.alpha = self.settings.addressBar.toolbarSpacingAlpha;
+    statusBarOverlay.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    [self.view addSubview:statusBarOverlay];
     
     self.indicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
     self.indicator.hidesWhenStopped = YES;
@@ -253,23 +264,21 @@
     
     [self updateToolbarItems:self.mainWebView.isLoading];
     
-    if (nil!=self.settings) {
-        if (YES==self.settings.isSwipeBackAndForward) {
-            [self setupSwipeGestures:self.mainWebView];
-        }
-        [self setupMediaSettings];
-    }
 }
 
-- (void)viewDidUnload {
-    [super viewDidUnload];
-    mainWebView = nil;
-    backBarButtonItem = nil;
-    forwardBarButtonItem = nil;
-    refreshBarButtonItem = nil;
-    stopBarButtonItem = nil;
-    actionBarButtonItem = nil;
-    pageActionSheet = nil;
+- (void)viewWillLayoutSubviews
+{
+    CGRect addressBarFrame = self.addressBar.view.frame;
+    addressBarFrame.size.width = self.view.frame.size.width;
+    self.addressBar.view.frame = addressBarFrame;
+    
+    CGRect webFrame = self.view.bounds;
+    webFrame.origin.y = self.addressBar.view.frame.size.height;
+    webFrame.origin.x = 0;
+    webFrame.size.width = self.view.frame.size.width;
+    webFrame.size.height = self.view.frame.size.height-self.addressBar.view.frame.size.height;
+    self.mainWebView.frame = webFrame;
+    
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -321,53 +330,44 @@
 }
 
 
-#pragma mark - Gestures
+#pragma mark - Addressbar
 
-- (void)setupSwipeGestures:(UIWebView *)webView
+- (void)updateAddress:(NSURL *)sourceURL
 {
-    UISwipeGestureRecognizer *swipeRight = [[UISwipeGestureRecognizer alloc] initWithTarget:self  action:@selector(swipeRightAction:)];
-    swipeRight.direction = UISwipeGestureRecognizerDirectionRight;
-    swipeRight.delegate = self;
-    [webView addGestureRecognizer:swipeRight];
+    if (NO==[self isAddressAJavascriptEvaluation:sourceURL]) {
+        self.addressBar.addressURL = sourceURL;
+    }
+}
+
+#pragma mark SVAddressBarDelegate methods
+
+- (void)addressModified:(NSMutableURLRequest *)request
+{
+    [self updateAddress:request.URL];
     
-    UISwipeGestureRecognizer *swipeLeft = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeLeftAction:)];
-    swipeLeft.direction = UISwipeGestureRecognizerDirectionLeft;
-    swipeLeft.delegate = self;
-    [webView addGestureRecognizer:swipeLeft];
+    [self loadRequest:request];
 }
 
-- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
+- (void)addressBarHidden:(BOOL)isHidden
 {
-    return YES;
 }
 
-- (void)swipeRightAction:(id)ignored
-{
-    [self.mainWebView goBack];
-}
-
-- (void)swipeLeftAction:(id)ignored
-{
-    [self.mainWebView goForward];
-}
-
-
-#pragma mark - Scrolling address bar
+#pragma mark Scrolling address bar
 
 - (void)observeValueForKeyPath:(NSString *)keyPath
 					  ofObject:(id)object
 						change:(NSDictionary *)change
 					   context:(void *)context
 {
-	[self scrollViewDidScroll];
+        [self scrollViewDidScroll];
 }
 
 - (void)scrollViewDidScroll
 {
     if (self.mainWebView.scrollView.contentOffset.y<-self.addressBar.view.frame.size.height-self.settings.addressBar.scrollingYOffset) {
-        self.addressBar.view.frame = CGRectMake(0, 0, self.addressBar.view.frame.size.width, self.addressBar.view.frame.size.height);
-        
-    } else {
+            self.addressBar.view.frame = CGRectMake(0, 0, self.addressBar.view.frame.size.width, self.addressBar.view.frame.size.height);
+            
+        } else {
         CGRect addressBarFrame = self.addressBar.view.frame;
         addressBarFrame.origin.y = -self.mainWebView.scrollView.contentOffset.y-self.addressBar.view.frame.size.height-self.settings.addressBar.scrollingYOffset;
         self.addressBar.view.frame = addressBarFrame;
@@ -414,8 +414,8 @@
     self.toolbarItems = items;
 }
 
-#pragma mark - UIWebViewDelegate
 
+#pragma mark - UIWebViewDelegate
 
 NSString * const kMainDocumentURL = @"kMainDocumentURL";
 NSString * const kHTTPSNotSupported = @"kHTTPSNotSupported";
@@ -457,7 +457,7 @@ NSString * const kHTTPSNotSupported = @"kHTTPSNotSupported";
                     newRequest.URL = [NSURL URLWithString:newURLAddress];
                     newRequest.mainDocumentURL = [NSURL URLWithString:newMainURLAddress];
                     
-                    newRequest = [self requestForAttemptingHTTPS:newRequest];
+                    newRequest = [SVHelper requestForAttemptingHTTPS:newRequest];
                     
                     [self loadRequest:newRequest];
                     
@@ -617,11 +617,7 @@ NSString * const PROGRESS_ESTIMATE_KEY=@"WebProgressEstimatedProgressKey";
   		[mailViewController setMessageBody:self.currentPageAddress isHTML:NO];
 		mailViewController.modalPresentationStyle = UIModalPresentationFormSheet;
         
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < 60000
-		[self presentModalViewController:mailViewController animated:YES];
-#else
         [self presentViewController:mailViewController animated:YES completion:NULL];
-#endif
 	}
     
     pageActionSheet = nil;
@@ -642,26 +638,7 @@ NSString * const PROGRESS_ESTIMATE_KEY=@"WebProgressEstimatedProgressKey";
           didFinishWithResult:(MFMailComposeResult)result
                         error:(NSError *)error
 {
-    
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < 60000
-	[self dismissModalViewControllerAnimated:YES];
-#else
     [self dismissViewControllerAnimated:YES completion:NULL];
-#endif
-}
-
-- (void)splitViewController:(UISplitViewController *)splitController willHideViewController:(UIViewController *)viewController withBarButtonItem:(UIBarButtonItem *)barButtonItem forPopoverController:(UIPopoverController *)popoverController
-{
-    barButtonItem.title = NSLocalizedString(@"Bookmarks", nil);
-    [self.navigationItem setLeftBarButtonItem:barButtonItem animated:YES];
-    self.masterPopoverController = popoverController;
-}
-
-- (void)splitViewController:(UISplitViewController *)splitController willShowViewController:(UIViewController *)viewController invalidatingBarButtonItem:(UIBarButtonItem *)barButtonItem
-{
-    // Called when the view is shown again in the split view, invalidating the button and popover controller.
-    [self.navigationItem setLeftBarButtonItem:nil animated:YES];
-    self.masterPopoverController = nil;
 }
 
 
@@ -733,16 +710,6 @@ NSString * const PROGRESS_ESTIMATE_KEY=@"WebProgressEstimatedProgressKey";
     return isJSEvaluation;
 }
 
-- (NSString *)getSearchQuery:(NSString *)urlString
-{
-    NSString *translatedToGoogleSearchQuery=nil;
-    
-    NSString *encodedSearchTerm = [urlString stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding];
-    translatedToGoogleSearchQuery = [NSString stringWithFormat:@"https://encrypted.google.com/search?q=%@",encodedSearchTerm];
-    
-    return translatedToGoogleSearchQuery;
-}
-
 - (NSMutableURLRequest *)convertHTTPStoHTTP:(NSURL *)url
 {
     NSMutableURLRequest *redirectedRequest;
@@ -756,14 +723,6 @@ NSString * const PROGRESS_ESTIMATE_KEY=@"WebProgressEstimatedProgressKey";
     [NSURLProtocol setProperty:@"YES" forKey:kHTTPSNotSupported inRequest:redirectedRequest];
     
     return redirectedRequest;
-}
-
-- (NSMutableURLRequest *)requestForAttemptingHTTPS:(NSMutableURLRequest *)newRequest
-{
-    const NSTimeInterval smallIntervalForTestingHTTPSSupportInSeconds = 3;
-    newRequest.timeoutInterval = smallIntervalForTestingHTTPSSupportInSeconds;
-    
-    return newRequest;
 }
 
 @end
