@@ -127,6 +127,10 @@
     
     [coder encodeObject:self.settings forKey:NSStringFromClass(SVWebSettings.class)];
     
+    if (self.parentViewController) {
+        [coder encodeObject:self.parentViewController forKey:NSStringFromClass(self.parentViewController.class)];
+    }
+    
     [super encodeRestorableStateWithCoder:coder];
 }
 
