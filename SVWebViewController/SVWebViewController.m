@@ -642,56 +642,6 @@ NSString * const PROGRESS_ESTIMATE_KEY=@"WebProgressEstimatedProgressKey";
 }
 
 
-#pragma mark - UI State Restoration
-
-+ (UIViewController *)viewControllerWithRestorationIdentifierPath:(NSArray *)identifierComponents coder:(NSCoder *)coder
-{
-    SVWebViewController *thisViewController=nil;
-    
-    if ([[identifierComponents objectAtIndex:0] isEqualToString:NSStringFromClass(SVModalWebViewController.class)]) {
-        SVModalWebViewController *modalView = [coder decodeObjectForKey:NSStringFromClass(UINavigationController.class)];
-        thisViewController = modalView.webViewController;
-        
-    } else {
-        SVWebSettings *settings = [coder decodeObjectForKey:NSStringFromClass(SVWebSettings.class)];
-        thisViewController = [[SVWebViewController alloc] initWithURL:nil withSettings:settings];
-        thisViewController.restorationIdentifier = identifierComponents.lastObject;
-        thisViewController.restorationClass = self.class;
-    }
-    
-    return thisViewController;
-}
-
-- (void)encodeRestorableStateWithCoder:(NSCoder *)coder
-{
-    [coder encodeObject:self.navigationController forKey:NSStringFromClass(UINavigationController.class)];
-    
-    [coder encodeObject:self.settings forKey:NSStringFromClass(self.settings.class)];
-    [coder encodeObject:self.URL forKey:[SVWebViewController KEY_URL]];
-    [coder encodeObject:self.mainWebView forKey:[SVWebViewController KEY_WEBVIEW]];
-    
-    [super encodeRestorableStateWithCoder:coder];
-}
-
-- (void)decodeRestorableStateWithCoder:(NSCoder *)coder
-{
-    [super decodeRestorableStateWithCoder:coder];
-    
-    self.URL = [coder decodeObjectForKey:[SVWebViewController KEY_URL]];
-    self.mainWebView = [coder decodeObjectForKey:[SVWebViewController KEY_WEBVIEW]];
-}
-
-+ (NSString *)KEY_URL
-{
-    return @"URL";
-}
-
-+ (NSString *)KEY_WEBVIEW
-{
-    return @"WEBVIEW";
-}
-
-
 #pragma mark - Misc functions
 
 - (void)reload
@@ -723,6 +673,49 @@ NSString * const PROGRESS_ESTIMATE_KEY=@"WebProgressEstimatedProgressKey";
     [NSURLProtocol setProperty:@"YES" forKey:kHTTPSNotSupported inRequest:redirectedRequest];
     
     return redirectedRequest;
+}
+
+
+#pragma mark - UI State Restoration
+
++ (UIViewController *)viewControllerWithRestorationIdentifierPath:(NSArray *)identifierComponents coder:(NSCoder *)coder
+{
+    SVWebViewController *thisViewController=nil;
+    
+    if ([coder decodeObjectForKey:NSStringFromClass(UINavigationController.class)]) {
+        SVModalWebViewController *modalView = [coder decodeObjectForKey:NSStringFromClass(UINavigationController.class)];
+        thisViewController = modalView.webViewController;
+        
+    } else {
+        SVWebSettings *settings = [coder decodeObjectForKey:NSStringFromClass(SVWebSettings.class)];
+        thisViewController = [[SVWebViewController alloc] initWithURL:nil withSettings:settings];
+        thisViewController.restorationIdentifier = identifierComponents.lastObject;
+        thisViewController.restorationClass = self.class;
+    }
+    
+    return thisViewController;
+}
+
+static NSString * const kURL = @"kURL";
+static NSString * const kWebView = @"kWebView";
+
+- (void)encodeRestorableStateWithCoder:(NSCoder *)coder
+{
+    [coder encodeObject:self.navigationController forKey:NSStringFromClass(UINavigationController.class)];
+    
+    [coder encodeObject:self.settings forKey:NSStringFromClass(self.settings.class)];
+    [coder encodeObject:self.URL forKey:kURL];
+    [coder encodeObject:self.mainWebView forKey:kWebView];
+    
+    [super encodeRestorableStateWithCoder:coder];
+}
+
+- (void)decodeRestorableStateWithCoder:(NSCoder *)coder
+{
+    [super decodeRestorableStateWithCoder:coder];
+    
+    self.URL = [coder decodeObjectForKey:kURL];
+    self.mainWebView = [coder decodeObjectForKey:kWebView];
 }
 
 @end
