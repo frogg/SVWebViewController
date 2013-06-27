@@ -110,41 +110,34 @@
 
 + (UIViewController *)viewControllerWithRestorationIdentifierPath:(NSArray *)identifierComponents coder:(NSCoder *)coder
 {
-    SVModalWebViewController *thisViewController=nil;
+    UIViewController *thisViewController=nil;
     
-    SVWebSettings *settings = [coder decodeObjectForKey:NSStringFromClass(SVWebSettings.class)];
-    
-    thisViewController = [[SVModalWebViewController alloc] initWithURL:nil withSettings:settings];
-    thisViewController.restorationIdentifier = identifierComponents.lastObject;
-    thisViewController.restorationClass = self.class;
+    if (1<identifierComponents.count) {
+        NSString *parentViewControllerID = [identifierComponents objectAtIndex:identifierComponents.count-2];
+        UIViewController *parentViewController = [coder decodeObjectForKey:parentViewControllerID];
+        for (UIViewController *childViewController in parentViewController.childViewControllers) {
+            if (childViewController.class==self.class) {
+                thisViewController = childViewController;
+            }
+        }
+        
+    } else {
+        SVWebSettings *settings = [coder decodeObjectForKey:NSStringFromClass(SVWebSettings.class)];
+        
+        thisViewController = [[SVModalWebViewController alloc] initWithURL:nil withSettings:settings];
+    }
     
     return thisViewController;
 }
 
 - (void)encodeRestorableStateWithCoder:(NSCoder *)coder
 {
-    [coder encodeObject:self.webViewController forKey:[SVModalWebViewController KEY_WEBVIEW_CONTROLLER]];
-    
-    [coder encodeObject:self.settings forKey:NSStringFromClass(SVWebSettings.class)];
-    
     if (self.parentViewController) {
         [coder encodeObject:self.parentViewController forKey:NSStringFromClass(self.parentViewController.class)];
     }
+    [coder encodeObject:self.settings forKey:NSStringFromClass(SVWebSettings.class)];
     
     [super encodeRestorableStateWithCoder:coder];
-}
-
-- (void)decodeRestorableStateWithCoder:(NSCoder *)coder
-{
-    [super decodeRestorableStateWithCoder:coder];
-    
-    self.webViewController = [coder decodeObjectForKey:[SVModalWebViewController KEY_WEBVIEW_CONTROLLER]];
-}
-
-#pragma mark Key constants used by the coder.
-+ (NSString *)KEY_WEBVIEW_CONTROLLER
-{
-    return @"KEY_WEBVIEW_CONTROLLER";
 }
 
 @end
