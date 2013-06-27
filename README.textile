@@ -1,8 +1,13 @@
-__*Important note if your project doesn't use ARC*: you must add the @-fobjc-arc@ compiler flag to @SVWebViewController.m@ and @SVModalWebViewController.m@ in Target Settings > Build Phases > Compile Sources.__
+h1. Ben Pettit's SVWebViewController fork
 
-h1. SVWebViewController
+This is a fork of Sam Vermette and Blork's SVWebViewController with a few main differences in mind:
 
-is a simple inline browser for iOS. The iPhone UI is highly based on Tweetie's inline browser, and the iPad version on "Reeder":http://reederapp.com/ipad/. 
+* This version does not support any version of iOS previous to ios6.
+* Added UI State Restoration support.
+* Added support calling the UIWebView didFinishLoading delegate on all pages loaded including HTML5 pages such as on YouTube.
+* Added support for page change notifications delivered via a delegate.
+* Added feature of automatically redirecting to the HTTPS protocol rather than the HTTP protocol if supported/desired.
+* Added address bar object which can double as a search bar.
 
 !http://f.cl.ly/items/0l3P2E1f1j0X0U3i151z/svwebviewcontroller4.png!
 
