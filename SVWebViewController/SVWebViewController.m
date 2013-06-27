@@ -1,4 +1,4 @@
-//
+ //
 //  SVWebViewController.m
 //
 //  Created by Ben Pettit on 24/06/2013
@@ -41,7 +41,7 @@
 - (void)stopClicked:(UIBarButtonItem *)sender;
 - (void)actionButtonClicked:(UIBarButtonItem *)sender;
 
-@property (strong) UIView *testView;
+@property (nonatomic) MainWebViewRestoreState restoredWebViewState;
 
 @end
 
@@ -146,7 +146,7 @@
 
 - (id)initWithURL:(NSURL*)pageURL {
     
-    if(self = [super init]) {
+    if(self = [self init]) {
         self.settings = [SVWebSettings new];
         
         if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
@@ -285,10 +285,15 @@
     NSAssert(self.navigationController, @"SVWebViewController needs to be contained in a UINavigationController. If you are presenting SVWebViewController modally, use SVModalWebViewController instead.");
     
 	[super viewWillAppear:animated];
-	
-    self.indicator.center = self.mainWebView.center;
     
-    [self.navigationController setToolbarHidden:NO animated:animated];
+    if (RestoreWebViewStateLoadingFirstPage==self.restoredWebViewState) {
+        [self.mainWebView reload];
+        
+    } else {
+        self.indicator.center = self.mainWebView.center;
+        
+        [self.navigationController setToolbarHidden:NO animated:animated];
+    }
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -359,7 +364,7 @@
 						change:(NSDictionary *)change
 					   context:(void *)context
 {
-        [self scrollViewDidScroll];
+    [self scrollViewDidScroll];
 }
 
 - (void)scrollViewDidScroll
@@ -480,15 +485,15 @@ NSString * const kHTTPSNotSupported = @"kHTTPSNotSupported";
     return isStartLoad;
 }
 
-- (void)webViewDidStartLoad:(UIWebView *)webView {
-    
+- (void)webViewDidStartLoad:(UIWebView *)webView
+{
     if (nil!=self.settings.delegate) {
         if ([self.settings.delegate respondsToSelector:@selector(webViewDidStartLoad:)]) {
             [self.settings.delegate webViewDidStartLoad:webView];
         }
     }
     
-	[[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
     [self.indicator startAnimating];
     
     [self updateToolbarItems:webView.isLoading];
@@ -680,17 +685,20 @@ NSString * const PROGRESS_ESTIMATE_KEY=@"WebProgressEstimatedProgressKey";
 
 + (UIViewController *)viewControllerWithRestorationIdentifierPath:(NSArray *)identifierComponents coder:(NSCoder *)coder
 {
-    SVWebViewController *thisViewController=nil;
+    UIViewController *thisViewController=nil;
     
-    if ([coder decodeObjectForKey:NSStringFromClass(UINavigationController.class)]) {
-        SVModalWebViewController *modalView = [coder decodeObjectForKey:NSStringFromClass(UINavigationController.class)];
-        thisViewController = modalView.webViewController;
+    if (1<identifierComponents.count) {
+        NSString *parentViewControllerID = [identifierComponents objectAtIndex:identifierComponents.count-2];
+        UIViewController *parentViewController = [coder decodeObjectForKey:parentViewControllerID];
+        for (UIViewController *childViewController in parentViewController.childViewControllers) {
+            if (childViewController.class==self.class) {
+                thisViewController = childViewController;
+            }
+        }
         
     } else {
         SVWebSettings *settings = [coder decodeObjectForKey:NSStringFromClass(SVWebSettings.class)];
         thisViewController = [[SVWebViewController alloc] initWithURL:nil withSettings:settings];
-        thisViewController.restorationIdentifier = identifierComponents.lastObject;
-        thisViewController.restorationClass = self.class;
     }
     
     return thisViewController;
@@ -698,11 +706,13 @@ NSString * const PROGRESS_ESTIMATE_KEY=@"WebProgressEstimatedProgressKey";
 
 static NSString * const kURL = @"kURL";
 static NSString * const kWebView = @"kWebView";
+static NSString * const kWebViewScrollView = @"kWebViewScrollView";
 
 - (void)encodeRestorableStateWithCoder:(NSCoder *)coder
 {
-    [coder encodeObject:self.navigationController forKey:NSStringFromClass(UINavigationController.class)];
-    
+    if (self.parentViewController) {
+        [coder encodeObject:self.parentViewController forKey:NSStringFromClass(self.parentViewController.class)];
+    }
     [coder encodeObject:self.settings forKey:NSStringFromClass(self.settings.class)];
     [coder encodeObject:self.URL forKey:kURL];
     [coder encodeObject:self.mainWebView forKey:kWebView];
@@ -715,7 +725,9 @@ static NSString * const kWebView = @"kWebView";
     [super decodeRestorableStateWithCoder:coder];
     
     self.URL = [coder decodeObjectForKey:kURL];
+    
     self.mainWebView = [coder decodeObjectForKey:kWebView];
+    self.restoredWebViewState = RestoreWebViewStateLoadingFirstPage;
 }
 
 @end

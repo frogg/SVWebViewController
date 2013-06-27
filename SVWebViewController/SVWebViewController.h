@@ -43,6 +43,13 @@
 @property (nonatomic, strong, readonly) UIBarButtonItem *customBarButtonItem;
 @property (nonatomic, strong, readonly) UIActionSheet *pageActionSheet;
 
+#pragma mark Flag to show that the mainwebview is in restore state.
+typedef NS_ENUM(NSInteger, MainWebViewRestoreState) {
+    RestoreWebViewStateNone,
+    RestoreWebViewStateLoadingFirstPage
+};
+@property (nonatomic, readonly) MainWebViewRestoreState restoredWebViewState;
+
 @property (readonly) BOOL isSecureHTTPinUse;
 @property (readonly) BOOL isLoadingPage;
 @property (readonly, strong) NSString *currentPageAddress;
