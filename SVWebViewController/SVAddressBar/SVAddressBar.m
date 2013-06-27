@@ -151,7 +151,6 @@ static NSString * const kAddressToolbar = @"kAddressToolbar";
     addressBar.frame = addressBarFrame;
 }
 
-
 - (UILabel *)createTitleWithNavBar:(UIToolbar *)toolBar
 {
     CGRect labelFrame = CGRectMake(kMargin, kSpacer,
@@ -227,42 +226,6 @@ static NSString * const kAddressToolbar = @"kAddressToolbar";
     translatedToGoogleSearchQuery = [NSString stringWithFormat:@"https://encrypted.google.com/search?q=%@",encodedSearchTerm];
     
     return translatedToGoogleSearchQuery;
-}
-
-#pragma mark - UI State Restoration
-
-+ (UIViewController *)viewControllerWithRestorationIdentifierPath:(NSArray *)identifierComponents coder:(NSCoder *)coder
-{
-    SVAddressBar *thisViewController=nil;
-    
-    SVAddressBarSettings *settings = [coder decodeObjectForKey:NSStringFromClass(SVAddressBarSettings.class)];
-    
-    thisViewController = [[SVAddressBar alloc] initWithSettings:settings];
-    thisViewController.restorationIdentifier = identifierComponents.lastObject;
-    thisViewController.restorationClass = self.class;
-    
-    return thisViewController;
-}
-
-static NSString * const kPageTitle = @"kPageTitle";
-static NSString * const kAddressField = @"kAddressField";
-
-- (void)encodeRestorableStateWithCoder:(NSCoder *)coder
-{
-    [coder encodeObject:self.pageTitle.text forKey:kPageTitle];
-    [coder encodeObject:self.addressField.text forKey:kAddressField];
-    
-    [coder encodeObject:self.settings forKey:NSStringFromClass(SVAddressBarSettings.class)];
-    
-    [super encodeRestorableStateWithCoder:coder];
-}
-
-- (void)decodeRestorableStateWithCoder:(NSCoder *)coder
-{
-    [super decodeRestorableStateWithCoder:coder];
-    
-    self.pageTitle.text = [coder decodeObjectForKey:kPageTitle];
-    self.addressField.text = [coder decodeObjectForKey:kAddressField];
 }
 
 @end
