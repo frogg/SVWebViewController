@@ -288,6 +288,7 @@
     
     if (RestoreWebViewStateLoadingFirstPage==self.restoredWebViewState) {
         [self.mainWebView reload];
+        self.restoredWebViewState = RestoreWebViewStateNone;
         
     } else {
         self.indicator.center = self.mainWebView.center;
