@@ -33,4 +33,9 @@ static const NSInteger kStatusBarHeight = 20;
     return self;
 }
 
+- (void)dealloc
+{
+    _delegate = nil;
+}
+
 @end

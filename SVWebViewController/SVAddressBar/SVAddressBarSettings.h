@@ -19,9 +19,9 @@
 @property BOOL isScrolling;
 @property CGFloat toolbarSpacingAlpha;
 @property CGFloat scrollingYOffset;
-@property UIColor *webViewBackgroundColor;
+@property (strong) UIColor *webViewBackgroundColor;
 
-@property UIColor *tintColor;
+@property (strong) UIColor *tintColor;
 
 @property (strong) NSObject<SVAddressBarDelegate> *delegate;
 
