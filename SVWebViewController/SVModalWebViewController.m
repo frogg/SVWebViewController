@@ -73,15 +73,25 @@
     return self;
 }
 
-- (void)loadView
-{
-    [super loadView];
-    [self setNavigationBarHidden:YES];
+
+#pragma mark - Public methods
+
+- (void)setAvailableActions:(SVWebViewControllerAvailableActions)newAvailableActions {
+    self.webViewController.availableActions = newAvailableActions;
 }
 
 - (void)retrySimpleAuthentication
 {
     [self.webViewController.addressBar loadAddress];
+}
+
+
+#pragma mark - View methods
+
+- (void)loadView
+{
+    [super loadView];
+    [self setNavigationBarHidden:YES];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -90,14 +100,13 @@
     self.toolbar.tintColor = self.barsTintColor;
 }
 
-- (void)setAvailableActions:(SVWebViewControllerAvailableActions)newAvailableActions {
-    self.webViewController.availableActions = newAvailableActions;
-}
-
 - (void)viewWillLayoutSubviews
 {
     [self bugFixForBarButtonsBeingRemovedByActionSheet];
 }
+
+
+#pragma mark - Private methods
 
 - (void)bugFixForBarButtonsBeingRemovedByActionSheet
 {
