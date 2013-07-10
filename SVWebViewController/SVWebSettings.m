@@ -22,6 +22,11 @@
     return self;
 }
 
+- (void)dealloc
+{
+    _delegate = nil;
+}
+
 - (void)loadDefaults
 {
     self.mediaAllowsInlineMediaPlayback = YES;
@@ -33,7 +38,7 @@
 }
 
 #pragma mark - NSCoding
-NSString * const UIWEBVIEW_CLASS_TYPE = @"uiWebViewClassType";
+static NSString * const UIWEBVIEW_CLASS_TYPE = @"uiWebViewClassType";
 
 - (void)encodeWithCoder:(NSCoder *)aCoder
 {

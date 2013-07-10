@@ -20,9 +20,9 @@
 @property BOOL mediaPlaybackAllowsAirPlay;
 @property BOOL isUseHTTPSWhenPossible;
 
-@property SVAddressBarSettings *addressBar;
+@property (nonatomic, strong) SVAddressBarSettings *addressBar;
 
 @property (nonatomic) id uiWebViewClassType;
-@property (strong) id<UIWebViewDelegate, SVWebViewControllerDelegate> delegate;
+@property (strong) NSObject<UIWebViewDelegate, SVWebViewControllerDelegate> *delegate;
 
 @end
