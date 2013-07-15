@@ -278,7 +278,6 @@
     webFrame.size.width = self.view.frame.size.width;
     webFrame.size.height = self.view.frame.size.height-self.addressBar.view.frame.size.height;
     self.mainWebView.frame = webFrame;
-    
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -294,14 +293,6 @@
         self.indicator.center = self.mainWebView.center;
         
         [self.navigationController setToolbarHidden:NO animated:animated];
-    }
-}
-
-- (void)viewWillDisappear:(BOOL)animated {
-    [super viewWillDisappear:animated];
-    
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
-        [self.navigationController setToolbarHidden:YES animated:animated];
     }
 }
 
