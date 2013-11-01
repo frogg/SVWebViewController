@@ -19,6 +19,7 @@
 
 #pragma mark Update the addressbar title with a web view's current page title.
 - (void)updateTitle:(UIWebView *)webView;
+@property (nonatomic, strong, readonly) UILabel *pageTitle;
 
 #pragma mark Update the address field with a url.
 @property (nonatomic, strong) NSURL *addressURL;
