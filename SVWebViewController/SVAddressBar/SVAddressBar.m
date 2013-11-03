@@ -177,7 +177,13 @@ static NSString * const kAddressToolbar = @"kAddressToolbar";
     address.borderStyle = UITextBorderStyleRoundedRect;
     address.font = [UIFont systemFontOfSize:17];
     if (self.settings.isUseAsSearchBarWhenAddressNotFound) {
-        address.keyboardType = UIKeyboardTypeDefault;
+        NSArray *versionCompatibility = [[UIDevice currentDevice].systemVersion componentsSeparatedByString:@"."];
+        if ( 7 >= [[versionCompatibility objectAtIndex:0] intValue] ) {
+            address.keyboardType = UIKeyboardTypeWebSearch;
+            
+        } else {
+            address.keyboardType = UIKeyboardTypeDefault;
+        }
         
     } else {
         address.keyboardType = UIKeyboardTypeURL;
