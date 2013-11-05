@@ -80,11 +80,6 @@
     self.webViewController.availableActions = newAvailableActions;
 }
 
-- (void)retrySimpleAuthentication
-{
-    [self.webViewController.addressBar loadAddress];
-}
-
 
 #pragma mark - View methods
 

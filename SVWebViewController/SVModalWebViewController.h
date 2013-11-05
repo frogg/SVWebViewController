@@ -25,8 +25,6 @@ typedef NSUInteger SVWebViewControllerAvailableActions;
 - (id)initWithURL:(NSURL *)URL;
 - (id)initWithURL:(NSURL *)URL withSettings:(SVWebSettings *)settings;
 
-- (void)retrySimpleAuthentication;
-
 @property (nonatomic, strong) UIColor *barsTintColor;
 @property (nonatomic, readwrite) SVWebViewControllerAvailableActions availableActions;
 
