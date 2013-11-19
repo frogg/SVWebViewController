@@ -576,7 +576,7 @@ NSString * const PROGRESS_ESTIMATE_KEY=@"WebProgressEstimatedProgressKey";
 }
 
 - (void)reloadClicked:(UIBarButtonItem *)sender {
-    [mainWebView reload];
+    [self reload];
 }
 
 - (void)stopClicked:(UIBarButtonItem *)sender {
@@ -649,6 +649,8 @@ NSString * const PROGRESS_ESTIMATE_KEY=@"WebProgressEstimatedProgressKey";
 - (void)reload
 {
     [self.mainWebView reload];
+        //added goback since the uiwebview counts each reload as another page in the history(which can be very annoying)...
+    [self.mainWebView goBack];
 }
 
 - (BOOL)isAddressAJavascriptEvaluation:(NSURL *)sourceURL
