@@ -12,4 +12,5 @@
 @optional
 - (UIBarButtonItem *)createCustomBarButton:(SVWebViewController *)webViewController;
 - (void)historyChanged:(UIWebView *)webView;
+- (void)webViewCreated:(UIWebView *)webView;
 @end
