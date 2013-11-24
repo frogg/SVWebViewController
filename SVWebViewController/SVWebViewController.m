@@ -232,19 +232,21 @@
     self.mainWebView = [self.settings.uiWebViewClassType new];
     [self.mainWebView setClipsToBounds:YES];
     self.mainWebView.restorationIdentifier=NSStringFromClass(self.mainWebView.class);
+    self.mainWebView.delegate = self;
+    self.mainWebView.scalesPageToFit = YES;
+    [self setupMediaSettings];
     
     if (self.settings.addressBar.isScrolling) {
         [self.mainWebView.scrollView addObserver:self forKeyPath:@"contentOffset" options:NSKeyValueObservingOptionNew context:nil];
     }
     
+    if ([self.settings.delegate respondsToSelector:@selector(webViewCreated:)]) {
+        [self.settings.delegate webViewCreated:self.mainWebView];
+    }
+    
     if (nil!=self.URL) {
         [self loadURL:self.URL];
     }
-    
-    self.mainWebView.delegate = self;
-    self.mainWebView.scalesPageToFit = YES;
-    
-    [self setupMediaSettings];
     
     [self.view addSubview:self.mainWebView];
     
