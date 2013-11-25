@@ -229,7 +229,14 @@ static NSString * const kAddressToolbar = @"kAddressToolbar";
     NSString *translatedToGoogleSearchQuery=nil;
     
     NSString *encodedSearchTerm = [urlString stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding];
-    translatedToGoogleSearchQuery = [NSString stringWithFormat:@"https://encrypted.google.com/search?q=%@",encodedSearchTerm];
+
+    NSString *searchString;
+    if (self.settings.customSearchString) {
+        searchString = self.settings.customSearchString;
+    } else {
+        searchString = @"https://encrypted.google.com/search?q=";
+    }
+    translatedToGoogleSearchQuery = [NSString stringWithFormat:@"%@%@",searchString,encodedSearchTerm];
     
     return translatedToGoogleSearchQuery;
 }

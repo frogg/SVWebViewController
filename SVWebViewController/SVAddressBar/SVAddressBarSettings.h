@@ -14,6 +14,7 @@
 
 @property BOOL isUseHTTPSWhenNotDefined;
 @property BOOL isUseAsSearchBarWhenAddressNotFound;
+@property (nonatomic, strong) NSString *customSearchString;
 @property BOOL isHidden;
 
 @property BOOL isScrolling;
