@@ -319,7 +319,6 @@
 {
     [mainWebView stopLoading];
  	[[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
-    mainWebView.delegate = nil;
 }
 
 
