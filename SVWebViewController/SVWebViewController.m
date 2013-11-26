@@ -312,15 +312,10 @@
 
 - (void)dealloc
 {
-    [self cleanUpForDealloc];
-}
-
-- (void)cleanUpForDealloc
-{
     [mainWebView stopLoading];
  	[[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+    mainWebView.delegate = nil;
 }
-
 
 #pragma mark - Media player settings
 
@@ -715,7 +710,6 @@ static NSString * const kWebViewScrollView = @"kWebViewScrollView";
 
 - (void)encodeRestorableStateWithCoder:(NSCoder *)coder
 {
-    [self cleanUpForDealloc];
     if (self.parentViewController) {
         [coder encodeObject:self.parentViewController forKey:NSStringFromClass(self.parentViewController.class)];
     }
