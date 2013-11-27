@@ -30,9 +30,9 @@ static NSString * const kAddressToolbar = @"kAddressToolbar";
 @property (strong) UILabel *pageTitle;
 @property (strong) UITextField *addressField;
 
-@property (strong) SVAddressBarSettings *settings;
+@property (strong, nonatomic) SVAddressBarSettings *settings;
 
-@property (strong) UIToolbar *addressToolbar;
+@property (strong, nonatomic) UIToolbar *addressToolbar;
 
 @end
 
@@ -116,10 +116,14 @@ static NSString * const kAddressToolbar = @"kAddressToolbar";
     CGRect addressBarFrame = self.view.frame;
     addressBarFrame.size.height = kNavBarHeight;
     addressBarFrame.origin.y = self.settings.scrollingYOffset;
+    
+    UIView *toolbarBackground = [[UIView alloc] initWithFrame:addressBarBounds];
+    toolbarBackground.backgroundColor = [UIColor grayColor];
+    [self.view addSubview:toolbarBackground];
+    
     self.addressToolbar = [[UIToolbar alloc] initWithFrame:addressBarFrame];
     self.addressToolbar.restorationIdentifier = kAddressToolbar;
     self.addressToolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    self.addressToolbar.translucent = NO;
     
     self.pageTitle =  [self createTitleWithNavBar:self.addressToolbar];
     [self.addressToolbar addSubview:self.pageTitle];
@@ -135,6 +139,15 @@ static NSString * const kAddressToolbar = @"kAddressToolbar";
     bottomBorder.backgroundColor = [UIColor blackColor];
     bottomBorder.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [self.view addSubview:bottomBorder];
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    
+    if (self.settings.tintColor) {
+        self.addressToolbar.backgroundColor = self.settings.tintColor;
+    }
 }
 
 
