@@ -119,6 +119,7 @@ static NSString * const kAddressToolbar = @"kAddressToolbar";
     
     UIView *toolbarBackground = [[UIView alloc] initWithFrame:addressBarBounds];
     toolbarBackground.backgroundColor = [UIColor grayColor];
+    toolbarBackground.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [self.view addSubview:toolbarBackground];
     
     self.addressToolbar = [[UIToolbar alloc] initWithFrame:addressBarFrame];
