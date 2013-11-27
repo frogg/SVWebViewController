@@ -119,6 +119,7 @@ static NSString * const kAddressToolbar = @"kAddressToolbar";
     self.addressToolbar = [[UIToolbar alloc] initWithFrame:addressBarFrame];
     self.addressToolbar.restorationIdentifier = kAddressToolbar;
     self.addressToolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    self.addressToolbar.translucent = NO;
     
     self.pageTitle =  [self createTitleWithNavBar:self.addressToolbar];
     [self.addressToolbar addSubview:self.pageTitle];
@@ -129,6 +130,11 @@ static NSString * const kAddressToolbar = @"kAddressToolbar";
     [self scrollingAddress:self.view withAddressBar:self.addressToolbar];
     
     [self.view addSubview:self.addressToolbar];
+    
+    UIView *bottomBorder = [[UIView alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height-0.5, self.view.bounds.size.width, 0.5)];
+    bottomBorder.backgroundColor = [UIColor blackColor];
+    bottomBorder.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    [self.view addSubview:bottomBorder];
 }
 
 
