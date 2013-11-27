@@ -92,6 +92,7 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:NO];
     self.navigationBar.tintColor = self.barsTintColor;
+    self.toolbar.translucent = NO;
     self.toolbar.tintColor = self.barsTintColor;
 }
 
