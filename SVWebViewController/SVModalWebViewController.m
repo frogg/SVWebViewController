@@ -83,15 +83,10 @@
 
 #pragma mark - View methods
 
-- (void)loadView
-{
-    [super loadView];
-    [self setNavigationBarHidden:YES];
-}
-
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:NO];
     self.navigationBar.tintColor = self.barsTintColor;
+    self.navigationBar.translucent = NO;
     self.toolbar.translucent = NO;
     self.toolbar.tintColor = self.barsTintColor;
 }

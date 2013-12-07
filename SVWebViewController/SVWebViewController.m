@@ -293,9 +293,10 @@
         
     } else {
         self.indicator.center = self.mainWebView.center;
-        
-        [self.navigationController setToolbarHidden:NO animated:animated];
     }
+    
+    [self.navigationController setToolbarHidden:NO animated:animated];
+    [self.navigationController setNavigationBarHidden:YES animated:animated];
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
