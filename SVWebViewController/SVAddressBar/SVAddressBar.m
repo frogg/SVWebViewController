@@ -157,9 +157,7 @@ static NSString * const kAddressToolbar = @"kAddressToolbar";
 - (void)scrollingAddress:(UIView *)container withAddressBar:(UIToolbar *)addressBar
 {
     if (0!=self.settings.toolbarSpacingAlpha) {
-        CGRect webViewColorFrame;
-        webViewColorFrame.size.width = self.view.frame.size.width;
-        webViewColorFrame.size.height = self.settings.scrollingYOffset;
+        CGRect webViewColorFrame = CGRectMake(0, 0, self.view.frame.size.width, self.settings.scrollingYOffset);
         UIView *webViewColor = [[UIView alloc] initWithFrame:webViewColorFrame];
         webViewColor.backgroundColor = self.settings.webViewBackgroundColor;
         [container addSubview:webViewColor];
