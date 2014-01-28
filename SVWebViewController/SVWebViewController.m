@@ -250,9 +250,7 @@
     
     [self.view addSubview:self.mainWebView];
     
-    CGRect spacingForStatusBar;
-    spacingForStatusBar.size.height = self.settings.addressBar.scrollingYOffset;
-    spacingForStatusBar.size.width = self.view.frame.size.width;
+    CGRect spacingForStatusBar = CGRectMake(0, 0, self.view.frame.size.width, self.settings.addressBar.scrollingYOffset);
     UIToolbar *statusBarOverlay = [[UIToolbar alloc] initWithFrame:spacingForStatusBar];
     statusBarOverlay.alpha = self.settings.addressBar.toolbarSpacingAlpha;
     statusBarOverlay.autoresizingMask = UIViewAutoresizingFlexibleWidth;
